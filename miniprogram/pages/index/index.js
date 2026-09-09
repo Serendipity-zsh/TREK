@@ -33,8 +33,8 @@ Page({
   },
 
   loadTrips() {
-    return api.call('/api/trips').then((trips) => {
-      this.setData({ trips: Array.isArray(trips) ? trips : [] })
+    return api.call('/api/trips').then((data) => {
+      this.setData({ trips: Array.isArray(data?.trips) ? data.trips : [] })
     })
   },
 
