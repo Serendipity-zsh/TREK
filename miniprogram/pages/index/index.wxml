@@ -1,0 +1,30 @@
+<view class="page">
+  <view class="hero">
+    <text class="brand">TREK</text>
+    <text class="subtitle">旅行规划助手</text>
+  </view>
+
+  <view wx:if="{{!loggedIn}}" class="card login-card">
+    <text class="card-title">开始规划你的旅程</text>
+    <text class="card-copy">使用微信账号登录，行程数据会保存到 TREK。</text>
+    <button class="primary" loading="{{loading}}" bindtap="handleLogin">微信一键登录</button>
+    <text wx:if="{{error}}" class="error">{{error}}</text>
+  </view>
+
+  <block wx:else>
+    <view class="card user-card">
+      <view>
+        <text class="welcome">你好，{{user.username}}</text>
+        <text class="muted">你的行程</text>
+      </view>
+      <button class="ghost" bindtap="handleLogout">退出</button>
+    </view>
+    <view class="section-title">我的行程</view>
+    <view wx:if="{{!trips.length}}" class="card empty">还没有行程，马上创建一个吧。</view>
+    <view wx:for="{{trips}}" wx:key="id" class="card trip-card">
+      <text class="trip-title">{{item.title}}</text>
+      <text class="muted">{{item.start_date || '未设置日期'}}{{item.end_date ? ' - ' + item.end_date : ''}}</text>
+    </view>
+    <button class="map-entry" bindtap="openMap">搜索地点和地图</button>
+  </block>
+</view>

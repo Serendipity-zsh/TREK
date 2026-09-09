@@ -1,0 +1,18 @@
+{
+  "description": "TREK native WeChat mini program",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "compileHotReLoad": true,
+    "es6": true,
+    "minified": true,
+    "postcss": true,
+    "urlCheck": false
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.8.8",
+  "appid": "wx78c64e37ecf0c232",
+  "projectname": "trek-miniprogram",
+  "miniprogramRoot": "./"
+}

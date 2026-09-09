@@ -581,6 +581,67 @@ export class MapsService {
     return this.reverseGeocode(lat, lng, lang) as Promise<MapsReverseResult>;
   }
 
+  /**
+   * Native mini-program map adapter. The mini-program renders markers with
+   * wx.map; AMap Web Service supplies POI search and reverse geocoding without
+   * exposing the server-side key to the client.
+   */
+  async amapSearch(query: string, city?: string) {
+    const key = readEnv().maps.amapWebServiceKey;
+    if (!key) throw Object.assign(new Error('AMAP_WEB_SERVICE_KEY is not configured'), { status: 503 });
+    const params = new URLSearchParams({
+      key,
+      keywords: query.trim(),
+      offset: '20',
+      page: '1',
+      extensions: 'all',
+    });
+    if (city?.trim()) params.set('city', city.trim());
+    const response = await fetch(`https://restapi.amap.com/v3/place/text?${params.toString()}`);
+    const payload = await response.json() as { status?: string; info?: string; pois?: Array<Record<string, string>> };
+    if (!response.ok || payload.status !== '1') {
+      throw Object.assign(new Error(payload.info || `AMap search failed (${response.status})`), { status: 502 });
+    }
+    return {
+      source: 'amap',
+      suggestions: (payload.pois || []).flatMap((poi) => {
+        const [lng, lat] = String(poi.location || '').split(',').map(Number);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return [];
+        return [{
+          id: String(poi.id || `amap:${lng},${lat}`),
+          name: poi.name || '',
+          address: poi.address || '',
+          location: { lat, lng },
+          province: poi.pname || '',
+          city: poi.cityname || '',
+          district: poi.adname || '',
+          type: poi.type || '',
+        }];
+      }),
+    };
+  }
+
+  async amapReverse(lat: string, lng: string) {
+    const key = readEnv().maps.amapWebServiceKey;
+    if (!key) throw Object.assign(new Error('AMAP_WEB_SERVICE_KEY is not configured'), { status: 503 });
+    const params = new URLSearchParams({
+      key,
+      location: `${lng},${lat}`,
+      extensions: 'all',
+    });
+    const response = await fetch(`https://restapi.amap.com/v3/geocode/regeo?${params.toString()}`);
+    const payload = await response.json() as { status?: string; info?: string; regeocode?: { formatted_address?: string; addressComponent?: Record<string, unknown> } };
+    if (!response.ok || payload.status !== '1') {
+      throw Object.assign(new Error(payload.info || `AMap reverse geocode failed (${response.status})`), { status: 502 });
+    }
+    return {
+      source: 'amap',
+      name: payload.regeocode?.formatted_address || null,
+      address: payload.regeocode?.formatted_address || null,
+      address_component: payload.regeocode?.addressComponent || null,
+    };
+  }
+
   resolveUrl(url: string): Promise<MapsResolveUrlResult> {
     return this.resolveGoogleMapsUrl(url) as Promise<MapsResolveUrlResult>;
   }

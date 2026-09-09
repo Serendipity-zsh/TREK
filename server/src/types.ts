@@ -12,6 +12,7 @@ export interface User {
   avatar?: string | null;
   oidc_sub?: string | null;
   oidc_issuer?: string | null;
+  wechat_openid?: string | null;
   last_login?: string | null;
   mfa_enabled?: number | boolean;
   mfa_secret?: string | null;

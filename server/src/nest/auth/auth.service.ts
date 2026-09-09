@@ -354,6 +354,45 @@ export class AuthService {
     return { token, user: { ...safe, avatar_url: avatarUrl(user) } };
   }
 
+  wechatLogin(
+    openid: string,
+    profile?: { nickname?: string; avatar_url?: string },
+  ): { error?: string; status?: number; token?: string; user?: Record<string, unknown>; auditUserId?: number; created?: boolean } {
+    const normalizedOpenid = openid.trim();
+    if (!normalizedOpenid || normalizedOpenid.length > 128) {
+      return { error: 'Invalid WeChat identity', status: 401 };
+    }
+
+    let user = this.db.get<User>('SELECT * FROM users WHERE wechat_openid = ?', normalizedOpenid);
+    let created = false;
+    if (!user) {
+      const suffix = normalizedOpenid.slice(-10).replace(/[^a-zA-Z0-9]/g, 'x');
+      const baseUsername = `微信用户_${suffix}`;
+      let username = baseUsername;
+      let n = 2;
+      while (this.db.get('SELECT id FROM users WHERE username = ?', username)) username = `${baseUsername}_${n++}`;
+      const email = `wechat-${normalizedOpenid}@wechat.local`;
+      const passwordHash = bcrypt.hashSync(randomBytes(32).toString('hex'), BCRYPT_COST);
+      const avatar = typeof profile?.avatar_url === 'string' ? profile.avatar_url.trim().slice(0, 500) : null;
+      const result = this.db.run(
+        `INSERT INTO users (username, email, password_hash, role, avatar, wechat_openid, first_seen_version, login_count)
+         VALUES (?, ?, ?, 'user', ?, ?, ?, 0)`,
+        username,
+        email,
+        passwordHash,
+        avatar,
+        normalizedOpenid,
+        readEnv().app.appVersion || '0.0.0',
+      );
+      user = this.db.get<User>('SELECT * FROM users WHERE id = ?', result.lastInsertRowid);
+      created = true;
+    }
+    if (!user) return { error: 'Unable to create WeChat account', status: 500 };
+    const token = this.generateToken(user);
+    const safe = stripUserForClient(user) as Record<string, unknown>;
+    return { token, user: { ...safe, avatar_url: avatarUrl(user) }, auditUserId: user.id, created };
+  }
+
   validateInviteToken(token: string): { error?: string; status?: number; valid?: boolean; max_uses?: number; used_count?: number; expires_at?: string } {
     const invite = this.db.get('SELECT * FROM invite_tokens WHERE token = ?', token) as any;
     if (!invite) return { error: 'Invalid invite link', status: 404 };

@@ -54,6 +54,29 @@ export class AuthPublicController {
     return { token: result.token, user: result.user };
   }
 
+  /**
+   * Native mini-program login. CloudBase injects the caller's openid into
+   * requests made through wx.cloud.callContainer; the client never sends an
+   * openid supplied by itself. The returned JWT is used as an Authorization
+   * bearer token because native mini-program code does not share browser
+   * cookies with the web client.
+   */
+  @Post('wechat-login')
+  @Public('wx.cloud.callContainer supplies the authenticated mini-program identity')
+  @HttpCode(200)
+  wechatLogin(@Req() req: Request, @Body() body: { nickname?: string; avatar_url?: string }) {
+    const openid = String(req.headers['x-wx-openid'] || req.headers['x-wx-from-openid'] || '').trim();
+    if (!openid) {
+      throw new HttpException({ error: 'WeChat identity is missing. Call this endpoint through wx.cloud.callContainer.' }, 401);
+    }
+    const result = this.auth.wechatLogin(openid, body);
+    if (result.error) {
+      throw new HttpException({ error: result.error }, result.status!);
+    }
+    this.audit.writeAudit({ userId: result.auditUserId!, action: result.created ? 'user.wechat_register' : 'user.login', ip: getClientIp(req), details: { provider: 'wechat' } });
+    return { token: result.token, user: result.user };
+  }
+
   @Get('invite/:token')
   @Public('the invite token IS the credential')
   invite(@Param('token') token: string, @Req() req: Request) {

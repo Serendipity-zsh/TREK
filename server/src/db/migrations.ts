@@ -4257,6 +4257,19 @@ function runMigrations(db: Database.Database): void {
         db.exec('ALTER TABLE journey_entries ADD COLUMN stats_excluded INTEGER NOT NULL DEFAULT 0');
       }
     },
+    /**
+     * Native WeChat mini-program login uses the openid injected by
+     * wx.cloud.callContainer. Keep it separate from OIDC so the same TREK
+     * account can later support both login methods without changing the
+     * existing email/session contract.
+     */
+    () => {
+      const cols = db.prepare("SELECT name FROM pragma_table_info('users')").all() as Array<{ name: string }>;
+      if (!cols.some((c) => c.name === 'wechat_openid')) {
+        db.exec('ALTER TABLE users ADD COLUMN wechat_openid TEXT');
+        db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_wechat_openid ON users(wechat_openid) WHERE wechat_openid IS NOT NULL');
+      }
+    },
   ];
 
   if (currentVersion < migrations.length) {

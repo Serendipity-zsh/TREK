@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="search-row">
+    <input class="search-input" value="{{query}}" placeholder="搜索景点、酒店或地址" confirm-type="search" bindinput="onQueryInput" bindconfirm="search" />
+    <button class="search-button" loading="{{loading}}" bindtap="search">搜索</button>
+  </view>
+  <text wx:if="{{error}}" class="error">{{error}}</text>
+  <map class="map" latitude="{{latitude}}" longitude="{{longitude}}" scale="12" markers="{{markers}}" show-location enable-zoom enable-scroll></map>
+  <view wx:for="{{results}}" wx:key="id" data-index="{{index}}" bindtap="chooseResult" class="result">
+    <text class="name">{{item.name}}</text>
+    <text class="address">{{item.address}}</text>
+  </view>
+</view>

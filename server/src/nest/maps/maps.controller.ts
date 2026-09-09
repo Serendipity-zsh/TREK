@@ -83,6 +83,19 @@ export class MapsController {
     }
   }
 
+  @Post('amap/search')
+  @HttpCode(200)
+  async amapSearch(@Body() body: { query?: string; city?: string }) {
+    const query = typeof body?.query === 'string' ? body.query.trim() : '';
+    if (!query) throw new HttpException({ error: 'Search query is required' }, 400);
+    if (query.length > 200) throw new HttpException({ error: 'Input too long (max 200 chars)' }, 400);
+    try {
+      return await this.maps.amapSearch(query, body.city);
+    } catch (err: unknown) {
+      throw toHttpException(err, 'AMap search error', 502);
+    }
+  }
+
   // OSM-only POI explore: places of a category within the current map viewport.
   @Get('pois')
   async pois(
@@ -237,6 +250,20 @@ export class MapsController {
     } catch {
       // The legacy route swallows reverse-geocode failures into an empty result.
       return { name: null, address: null };
+    }
+  }
+
+  @Get('amap/reverse')
+  async amapReverse(@Query('lat') lat?: string, @Query('lng') lng?: string) {
+    const parsedLat = Number(lat);
+    const parsedLng = Number(lng);
+    if (!Number.isFinite(parsedLat) || !Number.isFinite(parsedLng)) {
+      throw new HttpException({ error: 'Valid lat and lng are required' }, 400);
+    }
+    try {
+      return await this.maps.amapReverse(String(parsedLat), String(parsedLng));
+    } catch (err: unknown) {
+      throw toHttpException(err, 'AMap reverse geocode error', 502);
     }
   }
 
