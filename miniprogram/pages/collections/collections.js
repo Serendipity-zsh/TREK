@@ -164,6 +164,34 @@ Page({
       api.deleteCollectionPlace(place.id).then(() => this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })).catch((err) => wx.showToast({ title: err.errMsg || '移除失败', icon: 'none' }))
     } })
   },
+  openPlace(e) {
+    const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
+    if (!place) return
+    const actions = ['打开地图', '复制到行程', '管理标签']
+    wx.showActionSheet({ itemList: actions, success: (result) => {
+      if (result.tapIndex === 0) this.openMap(e)
+      if (result.tapIndex === 1) this.copyPlaceToTrip(place)
+      if (result.tapIndex === 2) this.managePlaceLabels(e)
+    } })
+  },
+  copyPlaceToTrip(place) {
+    api.listTrips().then((data) => {
+      const trips = Array.isArray(data.trips) ? data.trips : (Array.isArray(data) ? data : [])
+      if (!trips.length) return wx.showToast({ title: '暂无可用行程', icon: 'none' })
+      wx.showActionSheet({ itemList: trips.slice(0, 6).map((trip) => trip.title || `行程 ${trip.id}`), success: (result) => {
+        const trip = trips[result.tapIndex]
+        if (!trip) return
+        api.copyCollectionPlacesToTrip({ trip_id: Number(trip.id), place_ids: [Number(place.id)], force: false }).then((reply) => {
+          const skipped = Array.isArray(reply.skipped) && reply.skipped.length
+          if (skipped) {
+            wx.showModal({ title: '地点已存在', content: '这个地点已经在行程中，是否仍然复制？', success: (choice) => {
+              if (choice.confirm) api.copyCollectionPlacesToTrip({ trip_id: Number(trip.id), place_ids: [Number(place.id)], force: true }).then(() => wx.showToast({ title: '已复制', icon: 'success' }))
+            } })
+          } else wx.showToast({ title: '已复制到行程', icon: 'success' })
+        }).catch((err) => wx.showToast({ title: err.errMsg || '复制失败', icon: 'none' }))
+      } })
+    }).catch((err) => wx.showToast({ title: err.errMsg || '读取行程失败', icon: 'none' }))
+  },
   openMap(e) { const p = this.data.visiblePlaces[e?.currentTarget?.dataset?.index] || this.data.visiblePlaces[0]; wx.navigateTo({ url: p?.lat != null ? `/pages/map/map?lat=${p.lat}&lng=${p.lng}` : '/pages/map/map' }) },
   openCalendar() { wx.navigateTo({ url: '/pages/vacay/vacay' }) },
   openAtlas() { wx.navigateTo({ url: '/pages/atlas/atlas' }) },
