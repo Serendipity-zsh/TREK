@@ -15,6 +15,7 @@
         <text class="card-title">登录</text>
         <text class="card-copy">欢迎回来</text>
         <button class="primary" loading="{{loading}}" bindtap="handleLogin">微信登录</button>
+        <button wx:if="{{devTools}}" class="dev-login" loading="{{loading}}" bindtap="handleDemoLogin">开发者工具预览登录</button>
         <text class="privacy-copy">首次登录会自动创建 TREK 账号</text>
         <text wx:if="{{error}}" class="error">{{error}}</text>
       </view>

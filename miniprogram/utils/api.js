@@ -24,6 +24,15 @@ function login() {
     return data
   })
 }
+function demoLogin() {
+  return call('/api/auth/demo-login', 'POST', {}).then((data) => {
+    app.globalData.token = data.token
+    app.globalData.user = data.user
+    wx.setStorageSync('trek_token', data.token)
+    wx.setStorageSync('trek_user', data.user)
+    return data
+  })
+}
 
 function amapSearch(query, city) {
   return call('/api/maps/amap/search', 'POST', { query, city })
@@ -59,4 +68,4 @@ function createReservation(tripId, payload) { return call(`/api/trips/${tripId}/
 function deleteReservation(tripId, id) { return call(`/api/trips/${tripId}/reservations/${id}`, 'DELETE') }
 function getWeather(lat, lng, date) { return call(`/api/weather?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}${date ? `&date=${encodeURIComponent(date)}` : ''}&lang=zh`) }
 
-module.exports = { call, login, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }
+module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }

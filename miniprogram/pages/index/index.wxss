@@ -31,6 +31,7 @@
 .card-title { display: block; color: #111827; font-size: 42rpx; font-weight: 700; }
 .card-copy { display: block; margin: 12rpx 0 58rpx; color: #9aa2b2; font-size: 27rpx; }
 .primary { width: 100%; margin: 0; color: #fff; background: #101827; border-radius: 16rpx; font-size: 30rpx; }
+.dev-login { width: 100%; margin: 20rpx 0 0; color: #1aad70; background: #edf9f3; border-radius: 16rpx; font-size: 27rpx; }
 .privacy-copy { display: block; margin-top: 24rpx; color: #9aa2b2; font-size: 23rpx; text-align: center; }
 .error { margin-top: 24rpx; color: #e53e3e; font-size: 24rpx; word-break: break-all; }
 .app-shell { min-height: 100vh; padding: 46rpx 36rpx 70rpx; box-sizing: border-box; background: #f7f8fa; }

@@ -10,6 +10,7 @@ App({
 
   onLaunch() {
     wx.cloud.init({ env: ENV_ID, traceUser: true })
+    this.globalData.devTools = wx.getSystemInfoSync().platform === 'devtools'
     this.globalData.token = wx.getStorageSync('trek_token') || ''
     this.globalData.user = wx.getStorageSync('trek_user') || null
   },

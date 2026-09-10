@@ -4,6 +4,7 @@ Page({
   data: {
     loggedIn: false,
     loading: false,
+    devTools: false,
     user: null,
     trips: [],
     error: '',
@@ -11,10 +12,20 @@ Page({
 
   onLoad() {
     const app = getApp()
+    this.setData({ devTools: !!app.globalData.devTools })
     if (app.globalData.token) {
       this.setData({ loggedIn: true, user: app.globalData.user })
       this.loadTrips()
     }
+  },
+
+  handleDemoLogin() {
+    if (this.data.loading) return
+    this.setData({ loading: true, error: '' })
+    api.demoLogin()
+      .then(({ user }) => { this.setData({ loggedIn: true, user }); return this.loadTrips() })
+      .catch((error) => this.setData({ error: error.errMsg || '预览登录失败，请在云托管开启 DEMO_MODE' }))
+      .finally(() => this.setData({ loading: false }))
   },
 
   handleLogin() {
