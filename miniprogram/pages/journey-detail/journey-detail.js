@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', editTitle: '', editSubtitle: '', availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', editTitle: '', editSubtitle: '', showTripTracks: false, availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
@@ -100,7 +100,7 @@ Page({
   },
   openSettings() {
     const linked = Array.isArray(this.data.journey?.trips) ? this.data.journey.trips.map((trip) => Number(trip.id)) : []
-    this.setData({ showSettings: true, editTitle: this.data.journey?.title || '', editSubtitle: this.data.journey?.subtitle || '', availableTrips: [], selectedTripIds: linked })
+    this.setData({ showSettings: true, editTitle: this.data.journey?.title || '', editSubtitle: this.data.journey?.subtitle || '', showTripTracks: !!this.data.journey?.show_trip_tracks, availableTrips: [], selectedTripIds: linked })
     api.listJourneyAvailableTrips().then((data) => { const trips = Array.isArray(data) ? data : data.trips || []; this.setData({ availableTrips: trips.map((trip) => ({ ...trip, id: Number(trip.id) })) }) }).catch(() => {})
   },
   closeSettings() { this.setData({ showSettings: false }) },
@@ -111,6 +111,7 @@ Page({
     const selectedTripIds = this.data.selectedTripIds.includes(tripId) ? this.data.selectedTripIds.filter((id) => id !== tripId) : this.data.selectedTripIds.concat(tripId)
     this.setData({ selectedTripIds })
   },
+  toggleJourneyTracks(e) { this.setData({ showTripTracks: !!e.detail.value }) },
   saveSettings() {
     const title = (this.data.editTitle || '').trim()
     if (!title) return wx.showToast({ title: '请输入旅记标题', icon: 'none' })
@@ -118,11 +119,11 @@ Page({
     const nextIds = this.data.selectedTripIds
     const added = nextIds.filter((tripId) => !currentIds.includes(tripId))
     const removed = currentIds.filter((tripId) => !nextIds.includes(tripId))
-    api.updateJourney(this.data.id, { title, subtitle: (this.data.editSubtitle || '').trim() }).then(() => Promise.all([
+    api.updateJourney(this.data.id, { title, subtitle: (this.data.editSubtitle || '').trim(), show_trip_tracks: this.data.showTripTracks }).then(() => Promise.all([
       ...added.map((tripId) => api.addJourneyTrip(this.data.id, tripId)),
       ...removed.map((tripId) => api.removeJourneyTrip(this.data.id, tripId)),
     ])).then(() => {
-      this.setData({ showSettings: false, 'journey.title': title, 'journey.subtitle': (this.data.editSubtitle || '').trim() })
+      this.setData({ showSettings: false, 'journey.title': title, 'journey.subtitle': (this.data.editSubtitle || '').trim(), 'journey.show_trip_tracks': this.data.showTripTracks })
       wx.showToast({ title: '已保存', icon: 'success' })
     }).catch((err) => wx.showToast({ title: err.errMsg || err.message || '保存失败', icon: 'none' }))
   },
