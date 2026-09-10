@@ -76,15 +76,19 @@
         </block>
       </view>
       <view wx:if="{{createOpen}}" class="sheet-mask" catchtap="closeCreate">
-        <view class="create-sheet" catchtap="noop">
+        <scroll-view class="create-sheet" scroll-y="true" enable-flex="true" catchtap="noop">
           <view class="sheet-head"><text>新建行程</text><text class="sheet-close" bindtap="closeCreate">×</text></view>
           <text class="sheet-copy">先建立一个轻量的旅行骨架，之后可以继续补充地点、交通和预订。</text>
           <text class="sheet-label">行程名称</text><input class="sheet-input" focus placeholder="例如：日本秋日" value="{{createForm.title}}" data-field="title" bindinput="inputCreate" />
           <text class="sheet-label">日期</text>
           <view class="date-row"><picker mode="date" value="{{createForm.start_date}}" data-field="start_date" bindchange="changeCreateDate"><view class="date-input">{{createForm.start_date || '开始日期'}}</view></picker><text>→</text><picker mode="date" value="{{createForm.end_date}}" data-field="end_date" bindchange="changeCreateDate"><view class="date-input">{{createForm.end_date || '结束日期'}}</view></picker></view>
           <text class="sheet-label">简介（可选）</text><textarea class="sheet-textarea" placeholder="写下这次旅行的方向" value="{{createForm.description}}" data-field="description" bindinput="inputCreate" />
+          <text class="sheet-label">封面图片</text>
+          <view class="cover-search-row"><input class="cover-search-input" placeholder="搜索目的地封面" value="{{coverQuery}}" bindinput="inputCoverQuery" confirm-type="search" bindconfirm="searchCoverImages" /><button class="cover-search-button" loading="{{coverLoading}}" bindtap="searchCoverImages">搜索</button></view>
+          <scroll-view wx:if="{{coverResults.length}}" scroll-x class="cover-results"><view wx:for="{{coverResults}}" wx:key="index" class="cover-result {{createCoverUrl === (item.url || item.full || item.src || item.image) ? 'selected' : ''}}" data-index="{{index}}" bindtap="selectCover"><image src="{{item.thumb || item.url || item.full || item.src || item.image}}" mode="aspectFill" /><text>{{item.photographer || item.description || 'TREK 封面'}}</text></view></scroll-view>
+          <image wx:if="{{createCoverUrl}}" class="cover-preview" src="{{createCoverUrl}}" mode="aspectFill" />
           <button class="sheet-primary" bindtap="submitCreate">创建行程</button>
-        </view>
+        </scroll-view>
       </view>
       <bottom-nav active="home" bind:create="createTrip" />
     </view>

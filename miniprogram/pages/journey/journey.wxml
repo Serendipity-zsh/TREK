@@ -1,6 +1,6 @@
 <view class="page">
   <view class="top"><text class="back" bindtap="openTools">‹</text><text class="title">旅记</text><button class="create" bindtap="openCreate">＋ 新建旅记</button></view>
-  <scroll-view scroll-y class="feed">
+  <scroll-view scroll-y="true" enable-flex="true" class="feed">
     <view wx:if="{{loading}}" class="empty">正在加载…</view>
     <view wx:elif="{{error}}" class="empty error">{{error}}</view>
     <view wx:elif="{{!journeys.length}}" class="empty"><text class="empty-mark">✦</text><text>还没有旅记，记录一次旅程吧。</text></view>
@@ -23,5 +23,5 @@
     </block>
   </scroll-view>
   <bottom-nav active="more" bind:create="openCreate" />
-  <view wx:if="{{showCreate}}" class="mask" catchtap="closeCreate"><view class="sheet create-sheet" catchtap="noop"><view class="sheet-head"><text class="sheet-title">新建旅记</text><text class="sheet-close" bindtap="closeCreate">×</text></view><input placeholder="例如：日本秋日" value="{{title}}" bindinput="onTitleInput" /><text class="trip-label">关联已有行程（可选）</text><scroll-view wx:if="{{availableTrips.length}}" scroll-y class="trip-options"><view wx:for="{{availableTrips}}" wx:key="id" class="trip-option {{selectedTripIds.indexOf(item.id) >= 0 ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="toggleCreateTrip"><view class="trip-cover" style="background:{{item.cover_image ? '#dfe2e8' : '#243451'}}"></view><view class="trip-option-copy"><text>{{item.title}}</text><text>{{item.start_date || '日期待定'}} · {{item.place_count || 0}} 个地点</text></view><text class="trip-check">{{selectedTripIds.indexOf(item.id) >= 0 ? '✓' : '○'}}</text></view></scroll-view><text wx:else class="trip-empty">暂无可关联行程</text><button class="primary" bindtap="submitCreate">创建</button></view></view>
+  <view wx:if="{{showCreate}}" class="mask" catchtap="closeCreate"><scroll-view class="sheet create-sheet" scroll-y="true" enable-flex="true" catchtap="noop"><view class="sheet-head"><text class="sheet-title">新建旅记</text><text class="sheet-close" bindtap="closeCreate">×</text></view><input placeholder="例如：日本秋日" value="{{title}}" bindinput="onTitleInput" /><text class="trip-label">关联已有行程（可选）</text><scroll-view wx:if="{{availableTrips.length}}" scroll-y="true" enable-flex="true" class="trip-options"><view wx:for="{{availableTrips}}" wx:key="id" class="trip-option {{selectedTripIds.indexOf(item.id) >= 0 ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="toggleCreateTrip"><view class="trip-cover" style="background:{{item.cover_image ? '#dfe2e8' : '#243451'}}"></view><view class="trip-option-copy"><text>{{item.title}}</text><text>{{item.start_date || '日期待定'}} · {{item.place_count || 0}} 个地点</text></view><text class="trip-check">{{selectedTripIds.indexOf(item.id) >= 0 ? '✓' : '○'}}</text></view></scroll-view><text wx:else class="trip-empty">暂无可关联行程</text><button class="primary" bindtap="submitCreate">创建</button></scroll-view></view>
 </view>

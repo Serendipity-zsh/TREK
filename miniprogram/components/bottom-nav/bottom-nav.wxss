@@ -1,4 +1,4 @@
-.bottom-nav {
+.trek-bottom-nav {
   position: fixed;
   right: 32rpx;
   bottom: calc(24rpx + env(safe-area-inset-bottom, 0px));

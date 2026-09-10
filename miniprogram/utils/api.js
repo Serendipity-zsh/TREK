@@ -91,6 +91,7 @@ function closeCollabPoll(tripId, id) { return call(`/api/trips/${tripId}/collab/
 function deleteCollabPoll(tripId, id) { return call(`/api/trips/${tripId}/collab/polls/${id}`, 'DELETE') }
 function getWeather(lat, lng, date) { return call(`/api/weather?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}${date ? `&date=${encodeURIComponent(date)}` : ''}&lang=zh`) }
 function getRates(base) { return call(`/api/rates?base=${encodeURIComponent(base || 'EUR')}`) }
+function searchTripCovers(query) { return call(`/api/trips/cover-images/search?query=${encodeURIComponent(query || '')}`) }
 function listNotifications(unreadOnly, offset) {
   const params = [`limit=50`, `offset=${Number(offset) || 0}`]
   if (unreadOnly) params.push('unread_only=true')
@@ -200,6 +201,7 @@ module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, g
 module.exports.getSettings = getSettings
 module.exports.setSetting = setSetting
 module.exports.getRates = getRates
+module.exports.searchTripCovers = searchTripCovers
 module.exports.updateDay = updateDay
 module.exports.updateBudget = updateBudget
 module.exports.deleteBudget = deleteBudget
