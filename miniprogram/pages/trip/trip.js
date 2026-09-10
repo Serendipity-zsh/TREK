@@ -1,7 +1,7 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0, collabNotes: [], files: [] },
+  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0, collabNotes: [], files: [], listKind: 'todo', listItems: [], listTotal: 0 },
   onLoad(options) { this.setData({ id: options.id || '', activeTab: options.tab || 'plan' }); this.load() },
   onPullDownRefresh() { this.load().finally(() => wx.stopPullDownRefresh()) },
   load() {
@@ -21,13 +21,13 @@ Page({
     if (!activeTab || activeTab === this.data.activeTab) return
     this.setData({ activeTab, tabItems: [], tabTotal: 0 })
     if (activeTab === 'map') return this.openMap()
-    if (activeTab === 'lists') return this.openTools({ currentTarget: { dataset: { tab: 'todo' } } })
-    if (activeTab === 'costs') return this.openTools({ currentTarget: { dataset: { tab: 'budget' } } })
     this.loadTab()
   },
   loadTab() {
     const tab = this.data.activeTab
-    if (tab === 'plan' || tab === 'map' || tab === 'lists' || tab === 'costs') return Promise.resolve()
+    if (tab === 'plan' || tab === 'map') return Promise.resolve()
+    if (tab === 'lists') return this.loadInlineList(this.data.listKind)
+    if (tab === 'costs') return this.loadInlineList('budget')
     this.setData({ tabLoading: true })
     if (tab === 'collab') return api.listCollabNotes(this.data.id).then((result) => this.setData({ collabNotes: result.notes || [] })).catch((error) => this.setData({ error: error.errMsg || '协作记录加载失败' })).finally(() => this.setData({ tabLoading: false }))
     if (tab === 'files') return api.listTripFiles(this.data.id).then((result) => this.setData({ files: result.files || [] })).catch((error) => this.setData({ error: error.errMsg || '文件列表加载失败' })).finally(() => this.setData({ tabLoading: false }))
@@ -35,6 +35,39 @@ Page({
       const items = Array.isArray(result.items) ? result.items : []
       this.setData({ tabItems: items, tabTotal: items.length })
     }).catch((error) => this.setData({ error: error.errMsg || '行程数据加载失败' })).finally(() => this.setData({ tabLoading: false }))
+  },
+  loadInlineList(kind) {
+    const request = kind === 'todo' ? api.listTodo(this.data.id) : kind === 'packing' ? api.listPacking(this.data.id) : api.listBudget(this.data.id)
+    this.setData({ tabLoading: true, listKind: kind })
+    return request.then((result) => {
+      const listItems = result.items || []
+      const listTotal = listItems.reduce((sum, item) => sum + Number(item.total_price || 0), 0)
+      this.setData({ listItems, listTotal })
+    }).catch((error) => this.setData({ error: error.errMsg || '列表加载失败' })).finally(() => this.setData({ tabLoading: false }))
+  },
+  switchListKind(event) { this.loadInlineList(event.currentTarget.dataset.kind) },
+  addInlineItem() {
+    const kind = this.data.activeTab === 'costs' ? 'budget' : this.data.listKind
+    const labels = { todo: '待办事项', packing: '行李物品', budget: '费用名称' }
+    wx.showModal({ title: `添加${labels[kind]}`, editable: true, placeholderText: '请输入名称', success: (result) => {
+      if (!result.confirm || !result.content.trim()) return
+      const name = result.content.trim()
+      const request = kind === 'todo' ? api.createTodo(this.data.id, { name }) : kind === 'packing' ? api.createPacking(this.data.id, { name }) : api.createBudget(this.data.id, { name, total_price: 0 })
+      request.then(() => this.loadInlineList(kind)).catch((error) => wx.showToast({ title: error.errMsg || '添加失败', icon: 'none' }))
+    } })
+  },
+  toggleInlineItem(event) {
+    const item = this.data.listItems[event.currentTarget.dataset.index]
+    if (!item || this.data.activeTab !== 'lists') return
+    const request = this.data.listKind === 'todo' ? api.updateTodo(this.data.id, item.id, { checked: !item.checked }) : api.updatePacking(this.data.id, item.id, { checked: !item.checked })
+    request.then(() => this.loadInlineList(this.data.listKind)).catch((error) => wx.showToast({ title: error.errMsg || '更新失败', icon: 'none' }))
+  },
+  removeInlineItem(event) {
+    const item = this.data.listItems[event.currentTarget.dataset.index]
+    if (!item) return
+    const request = this.data.activeTab === 'costs' ? null : this.data.listKind === 'todo' ? api.deleteTodo(this.data.id, item.id) : api.deletePacking(this.data.id, item.id)
+    if (!request) return wx.showToast({ title: '费用删除请从费用工具操作', icon: 'none' })
+    wx.showModal({ title: '删除项目？', success: (result) => { if (result.confirm) request.then(() => this.loadInlineList(this.data.listKind)).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' })) } })
   },
   addCollabNote() {
     wx.showModal({ title: '新增协作笔记', editable: true, placeholderText: '记录一个想法或提醒', success: (result) => {
