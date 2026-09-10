@@ -2,7 +2,7 @@
   <view wx:if="{{loading}}" class="loading">正在加载行程…</view>
   <text wx:if="{{error}}" class="error">{{error}}</text>
   <block wx:if="{{trip && !loading}}">
-    <view class="trip-header"><text class="eyebrow">TREK / 行程</text><text class="title">{{trip.title}}</text><text class="muted">{{trip.start_date || '未设置日期'}}{{trip.end_date ? ' — ' + trip.end_date : ''}}</text></view>
+    <view class="trip-header"><text class="eyebrow">TREK / 行程</text><text class="title">{{trip.title}}</text><text class="muted">{{trip.start_date || '未设置日期'}}{{trip.end_date ? ' — ' + trip.end_date : ''}}</text><view class="trip-actions"><text bindtap="editTrip">编辑</text><text bindtap="removeTrip">删除</text></view></view>
     <view class="toolbar"><button bindtap="openMap">地图</button><button bindtap="addDay">添加一天</button></view>
     <view class="quick-tools"><button bindtap="openTools" data-tab="todo">待办</button><button bindtap="openTools" data-tab="packing">行李</button><button bindtap="openTools" data-tab="budget">预算</button><button bindtap="openTools" data-tab="reservations">预订</button></view>
     <view wx:if="{{!days.length}}" class="card empty">还没有日期安排，点击“添加一天”开始规划。</view>

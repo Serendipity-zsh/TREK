@@ -36,6 +36,7 @@ function amapRoute(origin, destination, mode) { return call('/api/maps/amap/rout
 
 function getTrip(id) { return call(`/api/trips/${id}`) }
 function createTrip(payload) { return call('/api/trips', 'POST', payload) }
+function updateTrip(id, payload) { return call(`/api/trips/${id}`, 'PUT', payload) }
 function deleteTrip(id) { return call(`/api/trips/${id}`, 'DELETE') }
 function listDays(tripId) { return call(`/api/trips/${tripId}/days`) }
 function createDay(tripId, payload) { return call(`/api/trips/${tripId}/days`, 'POST', payload || {}) }
@@ -57,4 +58,4 @@ function listReservations(tripId) { return call(`/api/trips/${tripId}/reservatio
 function createReservation(tripId, payload) { return call(`/api/trips/${tripId}/reservations`, 'POST', payload) }
 function deleteReservation(tripId, id) { return call(`/api/trips/${tripId}/reservations/${id}`, 'DELETE') }
 
-module.exports = { call, login, amapSearch, amapReverse, amapRoute, getTrip, createTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }
+module.exports = { call, login, amapSearch, amapReverse, amapRoute, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }
