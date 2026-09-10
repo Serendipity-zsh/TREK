@@ -14,6 +14,8 @@ Page({
     viewMode: 'grid',
     menuOpen: false,
     welcomeOpen: false,
+    createOpen: false,
+    createForm: { title: '', description: '', start_date: '', end_date: '', currency: 'EUR' },
     error: '',
   },
 
@@ -138,16 +140,18 @@ Page({
     } })
   },
 
-  createTrip() {
-    wx.showModal({
-      title: '新建行程', editable: true, placeholderText: '例如：东京七日旅行',
-      success: (result) => {
-        if (!result.confirm || !result.content.trim()) return
-        api.createTrip({ title: result.content.trim(), day_count: 1 })
-          .then(({ trip }) => { this.loadTrips(); wx.navigateTo({ url: `../trip/trip?id=${trip.id}` }) })
-          .catch((error) => wx.showToast({ title: error.errMsg || '创建失败', icon: 'none' }))
-      },
-    })
+  createTrip() { this.setData({ createOpen: true, createForm: { title: '', description: '', start_date: '', end_date: '', currency: 'EUR' } }) },
+  closeCreate() { this.setData({ createOpen: false }) },
+  inputCreate(e) { this.setData({ [`createForm.${e.currentTarget.dataset.field}`]: e.detail.value }) },
+  changeCreateDate(e) { this.setData({ [`createForm.${e.currentTarget.dataset.field}`]: e.detail.value }) },
+  submitCreate() {
+    const form = this.data.createForm
+    const title = String(form.title || '').trim()
+    if (!title) return wx.showToast({ title: '请输入行程名称', icon: 'none' })
+    if (form.start_date && form.end_date && form.end_date < form.start_date) return wx.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
+    api.createTrip({ title, description: String(form.description || '').trim() || null, start_date: form.start_date || null, end_date: form.end_date || null, currency: form.currency || 'EUR', day_count: form.start_date && form.end_date ? Math.max(1, Math.round((new Date(form.end_date) - new Date(form.start_date)) / 86400000) + 1) : 1 })
+      .then(({ trip }) => { this.closeCreate(); this.loadTrips(); wx.navigateTo({ url: `../trip/trip?id=${trip.id}` }) })
+      .catch((error) => wx.showToast({ title: error.errMsg || '创建失败', icon: 'none' }))
   },
 
   openTools() {
