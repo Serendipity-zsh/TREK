@@ -4,12 +4,14 @@
   <view wx:elif="{{error}}" class="empty error">{{error}}</view>
   <scroll-view wx:else scroll-y class="feed">
     <view wx:if="{{place}}" class="detail-card">
-      <view class="place-symbol">⌖</view>
+      <view class="place-hero" wx:if="{{place.image_url}}"><image src="{{place.image_url}}" mode="aspectFill" /></view><view wx:else class="place-symbol">⌖</view>
       <text class="place-name">{{place.name}}</text>
-      <text class="status" bindtap="cycleStatus">{{place.status === 'visited' ? '已去过' : (place.status === 'want' ? '想去' : '有兴趣')}} · 点击切换</text>
-      <text wx:if="{{place.address}}" class="address">{{place.address}}</text>
+      <text wx:if="{{place.category_name || place.category && place.category.name}}" class="category">{{place.category_name || place.category.name}}</text>
+      <view class="status-row"><text class="status {{place.status === 'idea' ? 'selected' : ''}}" data-status="idea" bindtap="setStatus">有兴趣</text><text class="status {{place.status === 'want' ? 'selected' : ''}}" data-status="want" bindtap="setStatus">想去</text><text class="status {{place.status === 'visited' ? 'selected' : ''}}" data-status="visited" bindtap="setStatus">已去过</text></view>
+      <text wx:if="{{place.address}}" class="address">⌖ {{place.address}}</text>
       <view wx:if="{{place.label_names && place.label_names.length}}" class="labels"><text wx:for="{{place.label_names}}" wx:key="*this">{{item}}</text></view><text wx:if="{{place.description}}" class="description">{{place.description}}</text>
       <view wx:if="{{place.website || place.phone}}" class="contact"><text wx:if="{{place.phone}}">电话：{{place.phone}}</text><text wx:if="{{place.website}}">网址：{{place.website}}</text></view>
+      <view wx:if="{{place.links && place.links.length}}" class="links"><text class="section-label">相关链接</text><view wx:for="{{place.links}}" wx:key="url" class="link-row" data-url="{{item.url}}" bindtap="copyLink"><text>{{item.label || item.url}}</text><text>↗</text></view></view>
       <button wx:if="{{place.lat != null}}" class="primary" bindtap="openMap">在地图中打开</button><view class="action-row"><button bindtap="copyToTrip">复制到行程</button><button class="danger" bindtap="removePlace">移出清单</button></view>
     </view>
     <view wx:else class="empty">这个清单还没有地点</view>
