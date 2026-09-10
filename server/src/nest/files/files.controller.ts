@@ -21,6 +21,8 @@ import { RuntimeEnvService } from '../app-config/runtime-env.service';
 import type { Options } from 'multer';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'node:crypto';
+import type { FileChunkRequest } from '@trek/shared';
 import type { User } from '../../types';
 import { StorageService } from '../storage/storage.service';
 import { FilesService } from './files.service';
@@ -30,7 +32,7 @@ import { TripAccessGuard } from '../permissions/trip-access.guard';
 import type { TripAccess } from '../database/database.service';
 import { Trip } from '../permissions/trip.decorator';
 import { MAX_FILE_SIZE, BLOCKED_EXTENSIONS, isVideoExtension } from './files.constants';
-import { FileUploadDto, FileUpdateDto, FileLinkDto } from './files.dto';
+import { FileChunkDto, FileUploadDto, FileUpdateDto, FileLinkDto } from './files.dto';
 import { AllowedFileTypesService } from './allowed-file-types.service';
 
 /**
@@ -168,6 +170,59 @@ export class FilesController {
     });
     this.files.broadcast(tripId, 'file:created', { file: created }, socketId);
     return { file: created };
+  }
+
+  /** JSON upload bridge for native mini-program attachments (bounded to 10 MB). */
+  @Post('chunks')
+  async uploadChunk(
+    @CurrentUser() user: User,
+    @Param('tripId') tripId: string,
+    @Body() rawBody: FileChunkDto,
+  ) {
+    const body = rawBody as unknown as FileChunkRequest;
+    const uploadId = String(body.upload_id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const partIndex = Number(body.part_index);
+    const totalParts = Number(body.total_parts);
+    const data = String(body.data || '');
+    if (!uploadId || !Number.isInteger(partIndex) || !Number.isInteger(totalParts) || partIndex < 0 || totalParts < 1 || totalParts > 256 || partIndex >= totalParts || !data) {
+      throw new HttpException({ error: 'Invalid upload chunk' }, 400);
+    }
+    const bytes = Buffer.from(data, 'base64');
+    if (!bytes.length || bytes.length > 64 * 1024) throw new HttpException({ error: 'Upload chunk is too large' }, 400);
+    const originalName = path.basename(String(body.filename || 'attachment'));
+    const ext = path.extname(originalName).toLowerCase();
+    if (!ext || BLOCKED_EXTENSIONS.includes(ext) || ext === '.svg') throw new HttpException({ error: 'File type is not allowed' }, 400);
+    const trip = this.files.verifyTripAccess(tripId, user.id);
+    if (!trip) throw new HttpException({ error: 'Trip not found' }, 404);
+    if (isDemoWriteBlocked(this.env, user.email)) throw new HttpException(DEMO_WRITE_ERROR, 403);
+    if (!this.files.can('file_upload', trip, user)) throw new HttpException({ error: 'No permission to upload files' }, 403);
+    this.assertLinkTargets(tripId, { reservation_id: body.reservation_id as string | number | null | undefined, place_id: body.place_id as string | number | null | undefined });
+    const dir = path.join(this.storage.tempDir(), 'wechat-files', String(user.id), String(tripId), uploadId);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, `${partIndex}.part`), bytes);
+    const present = Array.from({ length: totalParts }, (_, index) => fs.existsSync(path.join(dir, `${index}.part`))).every(Boolean);
+    if (!present) return { complete: false, received: partIndex + 1, total: totalParts };
+    const storedName = `${crypto.randomUUID()}${ext}`;
+    const assembledPath = path.join(this.storage.tempDir(), storedName);
+    try {
+      const assembled = fs.openSync(assembledPath, 'w');
+      let totalBytes = 0;
+      try {
+        for (let index = 0; index < totalParts; index += 1) {
+          const chunk = fs.readFileSync(path.join(dir, `${index}.part`));
+          totalBytes += chunk.length;
+          if (totalBytes > 10 * 1024 * 1024) throw new HttpException({ error: 'File is too large' }, 400);
+          fs.writeSync(assembled, chunk);
+        }
+      } finally { fs.closeSync(assembled); }
+      await this.storage.put('files', storedName, { tmpPath: assembledPath });
+      const file = this.files.createFile(tripId, { filename: storedName, originalname: originalName, size: totalBytes, mimetype: String(body.mime_type || 'application/octet-stream') }, user.id, { description: body.description as string | undefined, place_id: body.place_id as string | number | null | undefined, reservation_id: body.reservation_id as string | number | null | undefined });
+      this.files.broadcast(tripId, 'file:created', { file }, undefined);
+      return { complete: true, file };
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+      try { fs.unlinkSync(assembledPath); } catch { /* storage driver already moved it */ }
+    }
   }
 
   @UseGuards(TripAccessGuard)

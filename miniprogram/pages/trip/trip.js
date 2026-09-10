@@ -1,7 +1,7 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0, collabNotes: [], files: [], listKind: 'todo', listItems: [], listTotal: 0 },
+  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0, collabNotes: [], files: [], uploadingFile: false, listKind: 'todo', listItems: [], listTotal: 0 },
   onLoad(options) { this.setData({ id: options.id || '', activeTab: options.tab || 'plan' }); this.load() },
   onPullDownRefresh() { this.load().finally(() => wx.stopPullDownRefresh()) },
   load() {
@@ -130,6 +130,31 @@ Page({
     wx.showModal({ title: '移除这个文件？', content: '文件会进入回收站，可在网页端恢复。', success: (result) => {
       if (!result.confirm) return
       api.deleteTripFile(this.data.id, file.id).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '移除文件失败', icon: 'none' }))
+    } })
+  },
+  uploadFile() {
+    if (this.data.uploadingFile) return
+    wx.chooseMessageFile({ count: 1, type: 'all', success: async (result) => {
+      const file = result.tempFiles && result.tempFiles[0]
+      if (!file || Number(file.size || 0) > 10 * 1024 * 1024) return wx.showToast({ title: '小程序端附件不能超过 10MB', icon: 'none' })
+      this.setData({ uploadingFile: true })
+      try {
+        const fs = wx.getFileSystemManager()
+        const chunkSize = 48 * 1024
+        const totalParts = Math.max(1, Math.ceil(Number(file.size || 0) / chunkSize))
+        const uploadId = `${Date.now()}_${Math.random().toString(36).slice(2)}`
+        const readChunk = (position, length) => new Promise((resolve, reject) => fs.readFile({ filePath: file.path, position, length, encoding: 'base64', success: (res) => resolve(res.data), fail: reject }))
+        const ext = String(file.name || file.path || '').split('.').pop().toLowerCase()
+        const mimeMap = { pdf: 'application/pdf', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', xls: 'application/vnd.ms-excel', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', csv: 'text/csv', txt: 'text/plain', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png' }
+        for (let partIndex = 0; partIndex < totalParts; partIndex += 1) {
+          const position = partIndex * chunkSize
+          const data = await readChunk(position, Math.min(chunkSize, Number(file.size || 0) - position))
+          await api.uploadTripFileChunk(this.data.id, { upload_id: uploadId, part_index: partIndex, total_parts: totalParts, filename: file.name || `attachment.${ext || 'bin'}`, mime_type: mimeMap[ext] || file.type || 'application/octet-stream', data })
+        }
+        wx.showToast({ title: '文件已上传', icon: 'success' })
+        this.loadTab()
+      } catch (error) { wx.showToast({ title: error.errMsg || error.message || '上传失败', icon: 'none' }) }
+      finally { this.setData({ uploadingFile: false }) }
     } })
   },
   removeReservation(event) {

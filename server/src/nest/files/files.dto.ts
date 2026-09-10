@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import {
   fileUploadRequestSchema,
+  fileChunkRequestSchema,
   fileUpdateRequestSchema,
   fileLinkRequestSchema,
 } from '@trek/shared';
@@ -14,5 +15,6 @@ import {
  * the pipe runs, so the DTO sees plain strings.
  */
 export class FileUploadDto extends createZodDto(fileUploadRequestSchema) {}
+export class FileChunkDto extends createZodDto(fileChunkRequestSchema) {}
 export class FileUpdateDto extends createZodDto(fileUpdateRequestSchema) {}
 export class FileLinkDto extends createZodDto(fileLinkRequestSchema) {}

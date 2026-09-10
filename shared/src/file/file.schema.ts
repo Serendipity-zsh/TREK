@@ -25,6 +25,20 @@ export const fileUploadRequestSchema = z.object({
 });
 export type FileUploadRequest = z.infer<typeof fileUploadRequestSchema>;
 
+/** JSON bridge payload used by the native mini program for bounded attachments. */
+export const fileChunkRequestSchema = z.looseObject({
+  upload_id: z.unknown().optional(),
+  part_index: z.unknown().optional(),
+  total_parts: z.unknown().optional(),
+  filename: z.unknown().optional(),
+  mime_type: z.unknown().optional(),
+  data: z.unknown().optional(),
+  description: z.unknown().optional(),
+  place_id: z.unknown().optional(),
+  reservation_id: z.unknown().optional(),
+});
+export type FileChunkRequest = z.infer<typeof fileChunkRequestSchema>;
+
 export const fileUpdateRequestSchema = z.object({
   description: z.string().optional(),
   place_id: nullableIdField,
