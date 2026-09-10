@@ -68,5 +68,7 @@ Page({
     } })
   },
   goHome() { wx.navigateBack({ delta: 1 }) },
+  openAtlas() { wx.navigateTo({ url: '../atlas/atlas' }) },
   openTools() { wx.navigateTo({ url: '../tools/tools' }) },
+  openMore() { wx.navigateTo({ url: '../tools/tools' }) },
 })
