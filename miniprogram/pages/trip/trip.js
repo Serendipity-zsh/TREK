@@ -1,8 +1,8 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false },
-  onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
+  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0 },
+  onLoad(options) { this.setData({ id: options.id || '', activeTab: options.tab || 'plan' }); this.load() },
   onPullDownRefresh() { this.load().finally(() => wx.stopPullDownRefresh()) },
   load() {
     if (!this.data.id) return Promise.resolve()
@@ -11,9 +11,28 @@ Page({
       .then(([tripResult, dayResult, placeResult]) => {
         const days = dayResult.days || []
         this.setData({ trip: tripResult.trip, days, places: placeResult.places || [], selectedDayId: this.data.selectedDayId || (days[0] && String(days[0].id)) || '' })
+        return this.loadTab()
       })
       .catch((error) => this.setData({ error: error.errMsg || '行程加载失败' }))
       .finally(() => this.setData({ loading: false }))
+  },
+  switchTab(event) {
+    const activeTab = event.currentTarget.dataset.tab
+    if (!activeTab || activeTab === this.data.activeTab) return
+    this.setData({ activeTab, tabItems: [], tabTotal: 0 })
+    if (activeTab === 'map') return this.openMap()
+    if (activeTab === 'lists') return this.openTools({ currentTarget: { dataset: { tab: 'todo' } } })
+    if (activeTab === 'costs') return this.openTools({ currentTarget: { dataset: { tab: 'budget' } } })
+    this.loadTab()
+  },
+  loadTab() {
+    const tab = this.data.activeTab
+    if (tab === 'plan' || tab === 'map' || tab === 'lists' || tab === 'costs') return Promise.resolve()
+    this.setData({ tabLoading: true })
+    return api.listReservations(this.data.id).then((result) => {
+      const items = Array.isArray(result.items) ? result.items : []
+      this.setData({ tabItems: items, tabTotal: items.length })
+    }).catch((error) => this.setData({ error: error.errMsg || '行程数据加载失败' })).finally(() => this.setData({ tabLoading: false }))
   },
   addDay() { api.createDay(this.data.id).then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '添加日期失败', icon: 'none' })) },
   editTrip() {
@@ -46,7 +65,7 @@ Page({
       .catch((error) => wx.showToast({ title: error.errMsg || '添加地点失败', icon: 'none' }))
   },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },
-  openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab}` }) },
+  openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab || 'todo'}` }) },
   goCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
   goHome() { wx.navigateBack({ delta: 1 }) },
 })
