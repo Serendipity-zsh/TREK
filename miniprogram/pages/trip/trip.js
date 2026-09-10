@@ -167,11 +167,36 @@ Page({
   },
   addReservation() {
     const isTransport = this.data.activeTab === 'transports'
-    wx.showModal({ title: isTransport ? '添加交通' : '添加预订', editable: true, placeholderText: isTransport ? '例如：东京到京都 新干线' : '例如：京都酒店', success: (result) => {
-      const title = (result.content || '').trim()
-      if (!result.confirm || !title) return
-      api.createReservation(this.data.id, { title, type: isTransport ? 'train' : 'hotel' }).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '添加失败', icon: 'none' }))
+    this.openReservationEditor(null, isTransport)
+  },
+  editReservation(event) {
+    const item = this.data.tabItems[event.currentTarget.dataset.index]
+    if (item) this.openReservationEditor(item, this.data.activeTab === 'transports')
+  },
+  openReservationEditor(item, isTransport) {
+    const transportTypes = ['flight', 'train', 'bus', 'car', 'taxi', 'ferry']
+    const bookingTypes = ['hotel', 'restaurant', 'event', 'tour', 'activity', 'parking', 'other']
+    const types = isTransport ? transportTypes : bookingTypes
+    const labels = { flight: '航班', train: '火车', bus: '巴士', car: '自驾', taxi: '出租车', ferry: '轮渡', hotel: '酒店', restaurant: '餐厅', event: '活动', tour: '旅行团', activity: '体验', parking: '停车', other: '其他' }
+    const currentType = types.includes(String(item?.type || '').toLowerCase()) ? String(item.type).toLowerCase() : types[0]
+    wx.showActionSheet({ itemList: types.map((type) => labels[type]), success: (choice) => {
+      const type = types[choice.tapIndex]
+      this.askReservationField('名称', item?.title || '', isTransport ? '例如：东京到京都 新干线' : '例如：京都酒店').then((title) => {
+        if (!title) return null
+        return this.askReservationField('日期（可选）', item?.start_date || item?.date || '', '例如：2026-10-01').then((date) => ({ title, date, type }))
+      }).then((draft) => {
+        if (!draft) return null
+        return this.askReservationField('地点（可选）', item?.location || '', '例如：京都站').then((location) => ({ ...draft, location }))
+      }).then((draft) => {
+        if (!draft) return
+        const payload = { title: draft.title, type: draft.type, start_date: draft.date || null, location: draft.location || null }
+        const request = item ? api.updateReservation(this.data.id, item.id, payload) : api.createReservation(this.data.id, payload)
+        request.then(() => { wx.showToast({ title: item ? '已更新' : '已添加', icon: 'success' }); return this.loadTab() }).catch((error) => wx.showToast({ title: error.errMsg || '保存失败', icon: 'none' }))
+      }).catch((error) => wx.showToast({ title: error.errMsg || '编辑失败', icon: 'none' }))
     } })
+  },
+  askReservationField(title, content, placeholderText) {
+    return new Promise((resolve) => wx.showModal({ title, editable: true, content, placeholderText, success: (result) => resolve(result.confirm ? String(result.content || '').trim() : '') }))
   },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },
   openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab || 'todo'}` }) },
