@@ -13,8 +13,7 @@ Page({
         this.setData({ weatherPlace: place.name })
         return api.getWeather(place.lat, place.lng)
       }).then((weather) => {
-        const current = weather.current || weather
-        this.setData({ weather, weatherTemperature: current.temperature_2m ?? current.temperature ?? '--' })
+        this.setData({ weather, weatherTemperature: weather.temp ?? '--' })
       }).catch((error) => this.setData({ error: error.errMsg || error.message || '天气加载失败' })).finally(() => this.setData({ loading: false }))
     }
     const request = this.data.tab === 'todo' ? api.listTodo(this.data.tripId) : this.data.tab === 'packing' ? api.listPacking(this.data.tripId) : this.data.tab === 'budget' ? api.listBudget(this.data.tripId) : api.listReservations(this.data.tripId)
