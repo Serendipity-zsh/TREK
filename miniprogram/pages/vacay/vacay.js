@@ -14,15 +14,17 @@ function month(year, m, state) {
   return { title: `${m + 1}月`, year, month: m, weeks }
 }
 Page({
-  data: { year: new Date().getFullYear(), months: [], weekdays: ['一', '二', '三', '四', '五', '六', '日'], plan: {}, stats: {}, entries: [], companyHolidays: [], userInitial: '我', loading: true, error: '', view: 'grid', mode: 'vacation', halfDay: false, compDay: false, selectedDate: '' },
+  data: { year: new Date().getFullYear(), months: [], editMonth: new Date().getMonth(), editTitle: `${new Date().getMonth() + 1}月`, weekdays: ['一', '二', '三', '四', '五', '六', '日'], plan: {}, stats: {}, entries: [], companyHolidays: [], userInitial: '我', loading: true, error: '', view: 'grid', mode: 'vacation', halfDay: false, compDay: false, selectedDate: '' },
   onLoad() { this.setData({ userInitial: String(getApp().globalData.user?.username || '我').slice(0, 1).toUpperCase() }); this.load() },
   load() { this.setData({ loading: true, error: '' }); Promise.all([getVacayPlan(), getVacayStats(this.data.year), getVacayEntries(this.data.year)]).then(([plan, stats, entries]) => { const data = entries || {}; this.setData({ plan: plan.plan || plan, stats: stats.stats || stats, entries: data.entries || [], companyHolidays: data.companyHolidays || data.company_holidays || [], loading: false }, () => this.refreshMonths()) }).catch((err) => this.setData({ months: this.buildMonths(), loading: false, error: err.message || '假期日历加载失败' })) },
   buildMonths() { const state = { entries: this.data.entries || [], companyHolidays: this.data.companyHolidays || [], selectedDate: this.data.selectedDate }; return Array.from({ length: 12 }, (_, i) => month(this.data.year, i, state)) },
-  refreshMonths() { this.setData({ months: this.buildMonths() }) },
+  refreshMonths() { this.setData({ months: this.buildMonths(), editTitle: `${this.data.editMonth + 1}月` }) },
   previousYear() { this.setData({ year: this.data.year - 1 }, () => this.load()) },
   nextYear() { this.setData({ year: this.data.year + 1 }, () => this.load()) },
-  openMonth(e) { this.setData({ view: 'edit', editMonth: Number(e.currentTarget.dataset.month) }) },
-  toggleView() { this.setData({ view: this.data.view === 'grid' ? 'edit' : 'grid' }) },
+  openMonth(e) { const editMonth = Number(e.currentTarget.dataset.month); this.setData({ view: 'edit', editMonth, editTitle: `${editMonth + 1}月` }) },
+  toggleView() { this.setData({ view: this.data.view === 'grid' ? 'edit' : 'grid', editMonth: this.data.editMonth == null ? new Date().getMonth() : this.data.editMonth }) },
+  previousMonth() { const editMonth = (this.data.editMonth + 11) % 12; this.setData({ editMonth, editTitle: `${editMonth + 1}月` }) },
+  nextMonth() { const editMonth = (this.data.editMonth + 1) % 12; this.setData({ editMonth, editTitle: `${editMonth + 1}月` }) },
   dayTap(e) {
     const cell = e.currentTarget.dataset.cell
     if (!cell || !cell.date) return
