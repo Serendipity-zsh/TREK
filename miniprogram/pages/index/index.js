@@ -50,4 +50,20 @@ Page({
   openMap() {
     wx.navigateTo({ url: '../map/map' })
   },
+
+  openTrip(event) {
+    wx.navigateTo({ url: `../trip/trip?id=${event.currentTarget.dataset.id}` })
+  },
+
+  createTrip() {
+    wx.showModal({
+      title: '新建行程', editable: true, placeholderText: '例如：东京七日旅行',
+      success: (result) => {
+        if (!result.confirm || !result.content.trim()) return
+        api.createTrip({ title: result.content.trim(), day_count: 1 })
+          .then(({ trip }) => { this.loadTrips(); wx.navigateTo({ url: `../trip/trip?id=${trip.id}` }) })
+          .catch((error) => wx.showToast({ title: error.errMsg || '创建失败', icon: 'none' }))
+      },
+    })
+  },
 })

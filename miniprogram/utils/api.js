@@ -33,4 +33,14 @@ function amapReverse(lat, lng) {
   return call(`/api/maps/amap/reverse?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`)
 }
 
-module.exports = { call, login, amapSearch, amapReverse }
+function getTrip(id) { return call(`/api/trips/${id}`) }
+function createTrip(payload) { return call('/api/trips', 'POST', payload) }
+function deleteTrip(id) { return call(`/api/trips/${id}`, 'DELETE') }
+function listDays(tripId) { return call(`/api/trips/${tripId}/days`) }
+function createDay(tripId, payload) { return call(`/api/trips/${tripId}/days`, 'POST', payload || {}) }
+function deleteDay(tripId, dayId) { return call(`/api/trips/${tripId}/days/${dayId}`, 'DELETE') }
+function listPlaces(tripId) { return call(`/api/trips/${tripId}/places`) }
+function createPlace(tripId, payload) { return call(`/api/trips/${tripId}/places`, 'POST', payload) }
+function createAssignment(tripId, dayId, payload) { return call(`/api/trips/${tripId}/days/${dayId}/assignments`, 'POST', payload) }
+
+module.exports = { call, login, amapSearch, amapReverse, getTrip, createTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment }

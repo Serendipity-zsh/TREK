@@ -1,0 +1,16 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="loading">正在加载行程…</view>
+  <text wx:if="{{error}}" class="error">{{error}}</text>
+  <block wx:if="{{trip && !loading}}">
+    <view class="trip-header"><text class="eyebrow">TREK / 行程</text><text class="title">{{trip.title}}</text><text class="muted">{{trip.start_date || '未设置日期'}}{{trip.end_date ? ' — ' + trip.end_date : ''}}</text></view>
+    <view class="toolbar"><button bindtap="openMap">地图</button><button bindtap="addDay">添加一天</button></view>
+    <view wx:if="{{!days.length}}" class="card empty">还没有日期安排，点击“添加一天”开始规划。</view>
+    <view wx:for="{{days}}" wx:key="id" class="day-card {{selectedDayId == item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectDay">
+      <view class="day-head"><view><text class="day-title">第 {{item.day_number}} 天</text><text class="muted">{{item.date || '日期待定'}}</text></view><button class="small-danger" data-id="{{item.id}}" catchtap="removeDay">删除</button></view>
+      <view wx:if="{{!item.assignments.length}}" class="day-empty">还没有地点</view>
+      <view wx:for="{{item.assignments}}" wx:key="id" class="assignment"><view class="pin"></view><view><text class="assignment-name">{{item.place_name}}</text><text class="muted">{{item.address || '已加入当天计划'}}</text></view></view>
+      <button class="add-place" data-id="{{item.id}}" catchtap="openPlacePicker">+ 添加地点</button>
+    </view>
+  </block>
+  <view wx:if="{{showPlacePicker}}" class="sheet-mask" catchtap="closePlacePicker"><view class="sheet" catchtap="noop"><view class="sheet-head"><text>选择地点</text><text bindtap="closePlacePicker">关闭</text></view><view wx:if="{{!places.length}}" class="empty">请先在地图中搜索并保存地点。</view><view wx:for="{{places}}" wx:key="id" class="place-row" data-index="{{index}}" bindtap="addPlace"><text>{{item.name}}</text><text class="muted">{{item.address}}</text></view></view></view>
+</view>

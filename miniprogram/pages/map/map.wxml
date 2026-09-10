@@ -6,7 +6,7 @@
   <text wx:if="{{error}}" class="error">{{error}}</text>
   <map class="map" latitude="{{latitude}}" longitude="{{longitude}}" scale="12" markers="{{markers}}" show-location enable-zoom enable-scroll></map>
   <view wx:for="{{results}}" wx:key="id" data-index="{{index}}" bindtap="chooseResult" class="result">
-    <text class="name">{{item.name}}</text>
-    <text class="address">{{item.address}}</text>
+    <view class="result-copy"><text class="name">{{item.name}}</text><text class="address">{{item.address}}</text></view>
+    <button class="save-button" data-index="{{index}}" catchtap="saveResult">保存</button>
   </view>
 </view>

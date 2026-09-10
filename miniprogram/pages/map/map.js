@@ -2,6 +2,8 @@ const api = require('../../utils/api')
 
 Page({
   data: {
+    tripId: '',
+    dayId: '',
     query: '',
     loading: false,
     error: '',
@@ -9,6 +11,10 @@ Page({
     latitude: 39.9042,
     longitude: 116.4074,
     markers: [],
+  },
+
+  onLoad(options) {
+    this.setData({ tripId: options.tripId || '', dayId: options.dayId || '' })
   },
 
   onQueryInput(event) {
@@ -56,5 +62,16 @@ Page({
         callout: { content: item.name, display: 'ALWAYS' },
       }],
     })
+  },
+
+  saveResult(event) {
+    const item = this.data.results[event.currentTarget.dataset.index]
+    if (!item || !this.data.tripId) {
+      wx.showToast({ title: '请从行程详情进入地图后保存', icon: 'none' })
+      return
+    }
+    api.createPlace(this.data.tripId, { name: item.name, address: item.address || '', lat: item.location.lat, lng: item.location.lng, category: item.type || 'poi' })
+      .then(() => wx.showToast({ title: '已保存到行程', icon: 'success' }))
+      .catch((error) => wx.showToast({ title: error.errMsg || '保存地点失败', icon: 'none' }))
   },
 })
