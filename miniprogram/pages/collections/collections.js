@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { collections: [], places: [], visiblePlaces: [], active: null, loading: true, view: 'list', error: '', query: '', status: 'all', menuOpen: false, markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { collections: [], places: [], visiblePlaces: [], active: null, loading: true, view: 'list', error: '', query: '', status: 'all', menuOpen: false, showAdd: false, addQuery: '', addResults: [], addLoading: false, markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onShow() { this.load() },
   load() {
     this.setData({ loading: true, error: '' })
@@ -41,6 +41,60 @@ Page({
       api.createCollection({ name: result.content.trim() }).then(() => this.load()).catch((err) => wx.showToast({ title: err.errMsg || '创建失败', icon: 'none' }))
     } })
   },
+  openAddPlace() {
+    if (!this.data.active) {
+      wx.showToast({ title: '请先选择清单', icon: 'none' })
+      return
+    }
+    this.setData({ showAdd: true, addQuery: '', addResults: [] })
+  },
+  closeAddPlace() { this.setData({ showAdd: false, addLoading: false, addResults: [] }) },
+  inputAddQuery(e) { this.setData({ addQuery: String(e.detail.value || '') }) },
+  searchAddPlace() {
+    const query = this.data.addQuery.trim()
+    if (!query) {
+      wx.showToast({ title: '输入地点名称', icon: 'none' })
+      return
+    }
+    this.setData({ addLoading: true })
+    api.amapSearch(query).then((data) => {
+      const results = Array.isArray(data.suggestions) ? data.suggestions : (Array.isArray(data.pois) ? data.pois : (Array.isArray(data.results) ? data.results : []))
+      this.setData({ addResults: results.slice(0, 12), addLoading: false })
+    }).catch((err) => this.setData({ addLoading: false, error: err.message || '地点搜索失败' }))
+  },
+  saveAddPlace(e) {
+    const item = this.data.addResults[e.currentTarget.dataset.index]
+    if (!item || !this.data.active) return
+    const location = item.location || item.position || {}
+    const lat = Number(item.lat ?? location.lat ?? item.latitude)
+    const lng = Number(item.lng ?? location.lng ?? item.longitude)
+    const payload = {
+      collection_id: Number(this.data.active.id),
+      name: item.name || item.title || item.address || '未命名地点',
+      address: item.address || item.adname || item.district || null,
+      lat: Number.isFinite(lat) ? lat : null,
+      lng: Number.isFinite(lng) ? lng : null,
+      website: item.website || null,
+      phone: item.tel || item.phone || null,
+      status: 'idea',
+      force: false,
+    }
+    api.saveCollectionPlace(payload).then((result) => {
+      if (result && result.duplicate && result.duplicateOf) {
+        wx.showModal({ title: '地点已在清单中', content: '是否仍要再次添加？', success: (choice) => {
+          if (!choice.confirm) return
+          api.saveCollectionPlace({ ...payload, force: true }).then(() => this.finishAddPlace()).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
+        } })
+        return
+      }
+      this.finishAddPlace()
+    }).catch((err) => wx.showToast({ title: err.errMsg || '保存地点失败', icon: 'none' }))
+  },
+  finishAddPlace() {
+    this.setData({ showAdd: false, addResults: [] })
+    this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })
+    wx.showToast({ title: '已加入清单', icon: 'success' })
+  },
   removePlace(e) {
     const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
     if (!place) return
@@ -54,4 +108,5 @@ Page({
   openAtlas() { wx.navigateTo({ url: '/pages/atlas/atlas' }) },
   openHome() { wx.navigateBack({ delta: 1 }) },
   openMore() { wx.navigateTo({ url: '/pages/tools/tools' }) },
+  noop() {},
 })
