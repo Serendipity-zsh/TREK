@@ -53,7 +53,10 @@ Page({
 
   loadTrips() {
     return api.call('/api/trips').then((data) => {
-      const trips = Array.isArray(data?.trips) ? data.trips : []
+      const trips = (Array.isArray(data?.trips) ? data.trips : []).map((trip, index) => ({
+        ...trip,
+        coverColor: ['#1b2844', '#315d55', '#5f3e64', '#81543e'][index % 4],
+      }))
       const visibleTrips = this.filterTrips(trips, this.data.tripFilter)
       this.setData({ trips, visibleTrips, featuredTrip: visibleTrips[0] || null })
     })
@@ -103,6 +106,36 @@ Page({
 
   openTrip(event) {
     wx.navigateTo({ url: `../trip/trip?id=${event.currentTarget.dataset.id}` })
+  },
+
+  editFeaturedTrip() {
+    const trip = this.data.featuredTrip
+    if (!trip) return
+    wx.showModal({ title: '编辑行程名称', editable: true, content: trip.title || '', placeholderText: '行程名称', success: (result) => {
+      const title = String(result.content || '').trim()
+      if (!result.confirm || !title || title === trip.title) return
+      api.updateTrip(trip.id, { title }).then(() => this.loadTrips()).catch((error) => wx.showToast({ title: error.errMsg || '保存失败', icon: 'none' }))
+    } })
+  },
+
+  copyFeaturedTrip() {
+    const trip = this.data.featuredTrip
+    if (!trip) return
+    wx.showModal({ title: '复制行程', content: `复制「${trip.title}」？`, success: (result) => {
+      if (!result.confirm) return
+      api.createTrip({ title: `${trip.title}（副本）`, description: trip.description || null, start_date: trip.start_date || null, end_date: trip.end_date || null, currency: trip.currency || 'EUR', day_count: trip.day_count || 1 })
+        .then(() => { wx.showToast({ title: '已复制', icon: 'success' }); return this.loadTrips() })
+        .catch((error) => wx.showToast({ title: error.errMsg || '复制失败', icon: 'none' }))
+    } })
+  },
+
+  archiveFeaturedTrip() {
+    const trip = this.data.featuredTrip
+    if (!trip) return
+    wx.showModal({ title: '归档行程', content: `归档「${trip.title}」？`, success: (result) => {
+      if (!result.confirm) return
+      api.updateTrip(trip.id, { is_archived: true }).then(() => { wx.showToast({ title: '已归档', icon: 'success' }); return this.loadTrips() }).catch((error) => wx.showToast({ title: error.errMsg || '归档失败', icon: 'none' }))
+    } })
   },
 
   createTrip() {
