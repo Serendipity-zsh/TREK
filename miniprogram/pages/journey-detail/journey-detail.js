@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, title: '', body: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', editTitle: '', editSubtitle: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
@@ -46,24 +46,37 @@ Page({
     wx.showModal({ title: '删除这篇记录？', success: (r) => { if (r.confirm) api.deleteJourneyEntry(id).then(() => this.load()) } })
   },
   openActions() {
-    const items = ['创建/更新公开分享', this.data.journey?.hide_skeletons ? '显示骨架记录' : '隐藏骨架记录', ...(this.data.shareLink ? ['复制分享令牌', '关闭公开分享'] : [])]
+    const items = ['编辑旅记', '创建/更新公开分享', this.data.journey?.hide_skeletons ? '显示骨架记录' : '隐藏骨架记录', ...(this.data.shareLink ? ['复制分享令牌', '关闭公开分享'] : [])]
     wx.showActionSheet({ itemList: items, success: (result) => {
-      if (result.tapIndex === 0) {
+      if (result.tapIndex === 0) return this.openSettings()
+      if (result.tapIndex === 1) {
         return api.createJourneyShareLink(this.data.id, { share_timeline: true, share_gallery: true, share_map: true }).then((share) => {
           this.setData({ shareLink: share });
           wx.setClipboardData({ data: share.token, success: () => wx.showToast({ title: '已创建并复制令牌', icon: 'success' }) })
         }).catch((err) => wx.showToast({ title: err.errMsg || '创建分享失败', icon: 'none' }))
       }
-      if (result.tapIndex === 1) {
+      if (result.tapIndex === 2) {
         const hide = !this.data.journey?.hide_skeletons
         return api.updateJourneyPreferences(this.data.id, { hide_skeletons: hide }).then(() => { this.setData({ 'journey.hide_skeletons': hide }); wx.showToast({ title: hide ? '已隐藏骨架记录' : '已显示骨架记录', icon: 'success' }) }).catch((err) => wx.showToast({ title: err.errMsg || '设置保存失败', icon: 'none' }))
       }
-      if (this.data.shareLink && result.tapIndex === 2) return wx.setClipboardData({ data: this.data.shareLink.token, success: () => wx.showToast({ title: '已复制令牌', icon: 'success' }) })
+      if (this.data.shareLink && result.tapIndex === 3) return wx.setClipboardData({ data: this.data.shareLink.token, success: () => wx.showToast({ title: '已复制令牌', icon: 'success' }) })
       wx.showModal({ title: '关闭公开分享？', content: '关闭后，之前的公开链接将不能继续访问。', success: (choice) => {
         if (!choice.confirm) return
         api.deleteJourneyShareLink(this.data.id).then(() => { this.setData({ shareLink: null }); wx.showToast({ title: '已关闭分享', icon: 'success' }) }).catch((err) => wx.showToast({ title: err.errMsg || '关闭失败', icon: 'none' }))
       } })
     } })
+  },
+  openSettings() { this.setData({ showSettings: true, editTitle: this.data.journey?.title || '', editSubtitle: this.data.journey?.subtitle || '' }) },
+  closeSettings() { this.setData({ showSettings: false }) },
+  inputEditTitle(e) { this.setData({ editTitle: e.detail.value }) },
+  inputEditSubtitle(e) { this.setData({ editSubtitle: e.detail.value }) },
+  saveSettings() {
+    const title = (this.data.editTitle || '').trim()
+    if (!title) return wx.showToast({ title: '请输入旅记标题', icon: 'none' })
+    api.updateJourney(this.data.id, { title, subtitle: (this.data.editSubtitle || '').trim() }).then(() => {
+      this.setData({ showSettings: false, 'journey.title': title, 'journey.subtitle': (this.data.editSubtitle || '').trim() })
+      wx.showToast({ title: '已保存', icon: 'success' })
+    }).catch((err) => wx.showToast({ title: err.errMsg || err.message || '保存失败', icon: 'none' }))
   },
   openUpload() {
     if (this.data.uploading) return
