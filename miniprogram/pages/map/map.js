@@ -20,7 +20,7 @@ Page({
     this.setData({ tripId: options.tripId || '', dayId: options.dayId || '', ...(options.lat && options.lng ? { latitude: Number(options.lat), longitude: Number(options.lng), scale: 14 } : {}) })
   },
   goHome() { wx.navigateBack({ delta: 1 }) },
-  openCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
+  openCalendar() { wx.navigateTo({ url: '../vacay/vacay' }) },
   openTools() { wx.navigateTo({ url: '../tools/tools' }) },
   openCollections() { wx.navigateTo({ url: '../collections/collections' }) },
   openJourney() { wx.navigateTo({ url: '../journey/journey' }) },

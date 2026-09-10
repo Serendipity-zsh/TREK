@@ -314,6 +314,6 @@ Page({
   },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },
   openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab || 'todo'}` }) },
-  goCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
+  goCalendar() { wx.navigateTo({ url: '../vacay/vacay' }) },
   goHome() { wx.navigateBack({ delta: 1 }) },
 })
