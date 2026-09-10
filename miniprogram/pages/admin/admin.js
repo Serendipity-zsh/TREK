@@ -1,5 +1,5 @@
 Page({
-  data: { user: null, userInitial: 'D', section: 'overview', stats: null, users: [], loading: true, error: '' },
+  data: { user: null, userInitial: 'D', section: 'overview', stats: null, users: [], auditEntries: [], auditTotal: 0, loading: true, error: '' },
   api: require('../../utils/api'),
   onLoad() {
     const user = getApp().globalData.user || {}
@@ -14,14 +14,16 @@ Page({
     }).catch((err) => this.setData({ loading: false, error: err.errMsg || '管理员数据加载失败' }))
   },
   chooseSection() {
-    wx.showActionSheet({ itemList: ['概览', '用户管理', '设置与外观', '通知中心'], success: (result) => {
-      const sections = ['overview', 'users', 'settings', 'notifications']
+    wx.showActionSheet({ itemList: ['概览', '用户管理', '审计日志', '设置与外观', '通知中心'], success: (result) => {
+      const sections = ['overview', 'users', 'audit', 'settings', 'notifications']
       const section = sections[result.tapIndex]
       this.setData({ section })
+      if (section === 'audit') this.loadAudit()
       if (section === 'settings') this.openSettings()
       if (section === 'notifications') this.openNotifications()
     } })
   },
+  loadAudit() { this.setData({ loading: true, error: '' }); this.api.getAdminAuditLog().then((result) => this.setData({ auditEntries: result.entries || [], auditTotal: Number(result.total || 0), loading: false })).catch((err) => this.setData({ loading: false, error: err.errMsg || '审计日志加载失败' })) },
   openSettings() { wx.navigateTo({ url: '../settings/settings' }) },
   openNotifications() { wx.navigateTo({ url: '../notifications/notifications' }) },
   prompt(label, value) {
