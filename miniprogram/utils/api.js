@@ -32,6 +32,7 @@ function amapSearch(query, city) {
 function amapReverse(lat, lng) {
   return call(`/api/maps/amap/reverse?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}`)
 }
+function amapRoute(origin, destination, mode) { return call('/api/maps/amap/route', 'POST', { origin, destination, mode }) }
 
 function getTrip(id) { return call(`/api/trips/${id}`) }
 function createTrip(payload) { return call('/api/trips', 'POST', payload) }
@@ -56,4 +57,4 @@ function listReservations(tripId) { return call(`/api/trips/${tripId}/reservatio
 function createReservation(tripId, payload) { return call(`/api/trips/${tripId}/reservations`, 'POST', payload) }
 function deleteReservation(tripId, id) { return call(`/api/trips/${tripId}/reservations/${id}`, 'DELETE') }
 
-module.exports = { call, login, amapSearch, amapReverse, getTrip, createTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }
+module.exports = { call, login, amapSearch, amapReverse, amapRoute, getTrip, createTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }

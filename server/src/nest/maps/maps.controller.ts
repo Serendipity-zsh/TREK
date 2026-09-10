@@ -267,6 +267,21 @@ export class MapsController {
     }
   }
 
+  @Post('amap/route')
+  @HttpCode(200)
+  async amapRoute(@Body() body: { origin?: { lat?: number; lng?: number }; destination?: { lat?: number; lng?: number }; mode?: 'driving' | 'walking' }) {
+    const origin = body?.origin;
+    const destination = body?.destination;
+    if (![origin?.lat, origin?.lng, destination?.lat, destination?.lng].every((value) => typeof value === 'number' && Number.isFinite(value))) {
+      throw new HttpException({ error: 'Valid origin and destination are required' }, 400);
+    }
+    try {
+      return await this.maps.amapRoute(origin as { lat: number; lng: number }, destination as { lat: number; lng: number }, body.mode === 'walking' ? 'walking' : 'driving');
+    } catch (err: unknown) {
+      throw toHttpException(err, 'AMap route error', 502);
+    }
+  }
+
   @Post('resolve-url')
   @HttpCode(200)
   async resolveUrl(@Body() body: MapsResolveUrlDto): Promise<MapsResolveUrlResult> {

@@ -642,6 +642,26 @@ export class MapsService {
     };
   }
 
+  async amapRoute(origin: { lat: number; lng: number }, destination: { lat: number; lng: number }, mode: 'driving' | 'walking' = 'driving') {
+    const key = readEnv().maps.amapWebServiceKey;
+    if (!key) throw Object.assign(new Error('AMAP_WEB_SERVICE_KEY is not configured'), { status: 503 });
+    const endpoint = mode === 'walking'
+      ? 'https://restapi.amap.com/v3/direction/walking'
+      : 'https://restapi.amap.com/v3/direction/driving';
+    const params = new URLSearchParams({ key, origin: `${origin.lng},${origin.lat}`, destination: `${destination.lng},${destination.lat}`, extensions: 'all' });
+    const response = await fetch(`${endpoint}?${params.toString()}`);
+    const payload = await response.json() as { status?: string; info?: string; route?: { paths?: Array<{ distance?: string; duration?: string; steps?: Array<{ polyline?: string }> }> } };
+    if (!response.ok || payload.status !== '1') {
+      throw Object.assign(new Error(payload.info || `AMap route failed (${response.status})`), { status: 502 });
+    }
+    const path = payload.route?.paths?.[0];
+    const polyline = (path?.steps || []).flatMap((step) => String(step.polyline || '').split(';').flatMap((point) => {
+      const [lng, lat] = point.split(',').map(Number);
+      return Number.isFinite(lat) && Number.isFinite(lng) ? [{ latitude: lat, longitude: lng }] : [];
+    }));
+    return { source: 'amap', mode, distance: Number(path?.distance || 0), duration: Number(path?.duration || 0), polyline };
+  }
+
   resolveUrl(url: string): Promise<MapsResolveUrlResult> {
     return this.resolveGoogleMapsUrl(url) as Promise<MapsResolveUrlResult>;
   }

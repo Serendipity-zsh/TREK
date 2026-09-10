@@ -11,6 +11,8 @@ Page({
     latitude: 39.9042,
     longitude: 116.4074,
     markers: [],
+    polyline: [],
+    routeSummary: '',
   },
 
   onLoad(options) {
@@ -62,6 +64,19 @@ Page({
         callout: { content: item.name, display: 'ALWAYS' },
       }],
     })
+  },
+
+  planRoute() {
+    if (this.data.results.length < 2 || this.data.loading) {
+      wx.showToast({ title: '至少搜索到两个地点', icon: 'none' })
+      return
+    }
+    const first = this.data.results[0].location
+    const last = this.data.results[this.data.results.length - 1].location
+    this.setData({ loading: true, error: '' })
+    api.amapRoute(first, last, 'driving').then((data) => {
+      this.setData({ polyline: [{ points: data.polyline || [], color: '#1aad70', width: 6, dottedLine: false }], routeSummary: `驾车约 ${(data.distance / 1000).toFixed(1)} 公里 · ${(data.duration / 60).toFixed(0)} 分钟` })
+    }).catch((error) => this.setData({ error: error.errMsg || '路线规划失败' })).finally(() => this.setData({ loading: false }))
   },
 
   saveResult(event) {
