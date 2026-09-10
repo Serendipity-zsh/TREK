@@ -16,7 +16,7 @@ Page({
       const labels = Array.isArray(active.labels) ? active.labels : (Array.isArray(data.labels) ? data.labels : [])
       const rawPlaces = Array.isArray(data.places) ? data.places : (active.places || [])
       const labelNames = Object.fromEntries(labels.map((label) => [Number(label.id), label.name]))
-      const places = rawPlaces.map((place) => ({ ...place, label_names: (place.label_ids || []).map((id) => labelNames[Number(id)]).filter(Boolean) }))
+      const places = rawPlaces.map((place) => ({ ...place, label_names: (place.label_ids || []).map((id) => labelNames[Number(id)]).filter(Boolean), category_name: place.category_name || (place.category && place.category.name) || '', category_color: (place.category && place.category.color) || '#6366f1' }))
       this.setData({ active, labels, labelFilter: [], places, visiblePlaces: places, menuOpen: false, labelMenu: false, view: 'list' })
       this.filterPlaces(this.data.query, this.data.status, [])
     }).catch((err) => this.setData({ error: err.errMsg || '清单加载失败' }))
