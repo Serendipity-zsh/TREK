@@ -50,7 +50,11 @@ Page({
   selectSearchResult(e) {
     const item = this.data.searchResults[e.currentTarget.dataset.index] || e.currentTarget.dataset.item
     if (!item?.location) return
-    this.setData({ selectedPlace: item, latitude: item.location.lat, longitude: item.location.lng, scale: 10, searchResults: [] })
+    const parts = typeof item.location === 'string' ? item.location.split(',').map(Number) : []
+    const latitude = Number(item.location?.lat ?? item.lat ?? parts[1])
+    const longitude = Number(item.location?.lng ?? item.lng ?? parts[0])
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return wx.showToast({ title: '地点坐标不可用', icon: 'none' })
+    this.setData({ selectedPlace: item, latitude, longitude, scale: 10, searchResults: [] })
   },
   togglePlanned() {
     const showPlanned = !this.data.showPlanned
