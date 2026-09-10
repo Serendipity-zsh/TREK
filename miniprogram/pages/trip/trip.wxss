@@ -4,3 +4,4 @@
 .assignment-copy{flex:1;min-width:0}.assignment-remove{padding:14rpx;color:#c53d55;font-size:34rpx}
 .list-switch{display:flex;gap:12rpx;margin:18rpx 0}.list-switch button{flex:1;margin:0;color:#777;background:#fff;font-size:24rpx}.list-switch button.active{color:#fff;background:#111218}.cost-summary{margin:18rpx 0;padding:24rpx;border-radius:22rpx;background:#fff;font-size:25rpx}.cost-summary text{float:right;font-weight:900}.inline-record{gap:14rpx}.inline-copy{flex:1;min-width:0}.inline-check{display:flex;align-items:center;justify-content:center;width:44rpx;height:44rpx;border:2rpx solid #aab1bb;border-radius:50%;color:#fff}.inline-check.checked{background:#1aad70;border-color:#1aad70}.done{text-decoration:line-through;color:#9299a4}
 .file-record{gap:18rpx}.file-copy{flex:1;min-width:0}.file-star,.file-remove{padding:12rpx;font-size:34rpx}.file-star{color:#a5aab2}.file-star.on{color:#f2a900}.file-remove{color:#c53d55}
+.record-copy{flex:1;min-width:0}

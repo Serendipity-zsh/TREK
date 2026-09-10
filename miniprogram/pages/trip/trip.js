@@ -128,6 +128,14 @@ Page({
       api.deleteTripFile(this.data.id, file.id).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '移除文件失败', icon: 'none' }))
     } })
   },
+  removeReservation(event) {
+    const item = this.data.tabItems[event.currentTarget.dataset.index]
+    if (!item) return
+    wx.showModal({ title: '删除这条记录？', content: '删除后不会影响行程中的地点。', success: (result) => {
+      if (!result.confirm) return
+      api.deleteReservation(this.data.id, item.id).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' }))
+    } })
+  },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },
   openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab || 'todo'}` }) },
   goCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
