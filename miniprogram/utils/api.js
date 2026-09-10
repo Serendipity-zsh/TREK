@@ -52,5 +52,8 @@ function updatePacking(tripId, id, payload) { return call(`/api/trips/${tripId}/
 function deletePacking(tripId, id) { return call(`/api/trips/${tripId}/packing/${id}`, 'DELETE') }
 function listBudget(tripId) { return call(`/api/trips/${tripId}/budget`) }
 function createBudget(tripId, payload) { return call(`/api/trips/${tripId}/budget`, 'POST', payload) }
+function listReservations(tripId) { return call(`/api/trips/${tripId}/reservations`) }
+function createReservation(tripId, payload) { return call(`/api/trips/${tripId}/reservations`, 'POST', payload) }
+function deleteReservation(tripId, id) { return call(`/api/trips/${tripId}/reservations/${id}`, 'DELETE') }
 
-module.exports = { call, login, amapSearch, amapReverse, getTrip, createTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget }
+module.exports = { call, login, amapSearch, amapReverse, getTrip, createTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }

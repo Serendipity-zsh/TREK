@@ -6,7 +6,7 @@ Page({
   switchTab(event) { this.setData({ tab: event.currentTarget.dataset.tab }); this.load() },
   load() {
     this.setData({ loading: true, error: '' })
-    const request = this.data.tab === 'todo' ? api.listTodo(this.data.tripId) : this.data.tab === 'packing' ? api.listPacking(this.data.tripId) : api.listBudget(this.data.tripId)
+    const request = this.data.tab === 'todo' ? api.listTodo(this.data.tripId) : this.data.tab === 'packing' ? api.listPacking(this.data.tripId) : this.data.tab === 'budget' ? api.listBudget(this.data.tripId) : api.listReservations(this.data.tripId)
     return request.then((data) => {
       const items = data.items || []
       const total = this.data.tab === 'budget' ? items.reduce((sum, item) => sum + Number(item.total_price || 0), 0) : 0
@@ -14,11 +14,11 @@ Page({
     }).catch((error) => this.setData({ error: error.errMsg || '加载失败' })).finally(() => this.setData({ loading: false }))
   },
   addItem() {
-    const labels = { todo: '待办事项', packing: '行李物品', budget: '费用名称' }
+    const labels = { todo: '待办事项', packing: '行李物品', budget: '费用名称', reservations: '预订' }
     wx.showModal({ title: `添加${labels[this.data.tab]}`, editable: true, placeholderText: '请输入名称', success: (result) => {
       if (!result.confirm || !result.content.trim()) return
       const name = result.content.trim()
-      const request = this.data.tab === 'todo' ? api.createTodo(this.data.tripId, { name }) : this.data.tab === 'packing' ? api.createPacking(this.data.tripId, { name }) : api.createBudget(this.data.tripId, { name, total_price: 0 })
+      const request = this.data.tab === 'todo' ? api.createTodo(this.data.tripId, { name }) : this.data.tab === 'packing' ? api.createPacking(this.data.tripId, { name }) : this.data.tab === 'budget' ? api.createBudget(this.data.tripId, { name, total_price: 0 }) : api.createReservation(this.data.tripId, { title: name })
       request.then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '添加失败', icon: 'none' }))
     } })
   },
@@ -33,7 +33,7 @@ Page({
     if (!item) return
     wx.showModal({ title: '删除项目？', success: (result) => {
       if (!result.confirm) return
-      const request = this.data.tab === 'todo' ? api.deleteTodo(this.data.tripId, item.id) : api.deletePacking(this.data.tripId, item.id)
+      const request = this.data.tab === 'todo' ? api.deleteTodo(this.data.tripId, item.id) : this.data.tab === 'packing' ? api.deletePacking(this.data.tripId, item.id) : api.deleteReservation(this.data.tripId, item.id)
       request.then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' }))
     } })
   },
