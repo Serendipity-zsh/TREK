@@ -115,6 +115,19 @@ Page({
       api.deleteAssignment(this.data.id, day.id, assignment.id).then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '移除失败', icon: 'none' }))
     } })
   },
+  toggleFileStar(event) {
+    const file = this.data.files[event.currentTarget.dataset.index]
+    if (!file) return
+    api.toggleTripFileStar(this.data.id, file.id).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '更新文件失败', icon: 'none' }))
+  },
+  removeFile(event) {
+    const file = this.data.files[event.currentTarget.dataset.index]
+    if (!file) return
+    wx.showModal({ title: '移除这个文件？', content: '文件会进入回收站，可在网页端恢复。', success: (result) => {
+      if (!result.confirm) return
+      api.deleteTripFile(this.data.id, file.id).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '移除文件失败', icon: 'none' }))
+    } })
+  },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },
   openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab || 'todo'}` }) },
   goCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
