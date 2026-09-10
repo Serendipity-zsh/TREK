@@ -1,6 +1,6 @@
 const { getAtlasStats, getAtlasBucketList, amapSearch } = require('../../utils/api')
 Page({
-  data: { stats: {}, bucket: [], query: '', searchOpen: false, loading: true, error: '', latitude: 25, longitude: 10, scale: 2, markers: [] },
+  data: { stats: {}, bucket: [], query: '', searchOpen: false, loading: true, error: '', latitude: 25, longitude: 10, scale: 3, markers: [] },
   onLoad() { this.load() },
   load() { Promise.all([getAtlasStats(), getAtlasBucketList()]).then(([stats, bucket]) => { const items = bucket.items || bucket || []; this.setData({ stats: stats.stats || stats || {}, bucket: items, markers: items.filter(i => i.lat != null && i.lng != null).map((i, n) => ({ id: n, latitude: i.lat, longitude: i.lng, title: i.name })) , loading: false }) }).catch((err) => this.setData({ loading: false, error: err.message || 'Atlas 数据加载失败' })) },
   toggleSearch() { this.setData({ searchOpen: !this.data.searchOpen }) },
