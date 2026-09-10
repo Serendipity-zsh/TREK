@@ -1,17 +1,22 @@
 const { getAtlasStats, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, amapSearch } = require('../../utils/api')
 Page({
-  data: { stats: {}, bucket: [], query: '', searchOpen: false, bucketOpen: false, loading: true, error: '', latitude: 25, longitude: 10, scale: 3, markers: [] },
+  data: { stats: {}, bucket: [], query: '', searchOpen: false, searchResults: [], bucketOpen: false, loading: true, error: '', latitude: 25, longitude: 10, scale: 3, markers: [], selectedPlace: null },
   onLoad() { this.load() },
   load() { Promise.all([getAtlasStats(), getAtlasBucketList()]).then(([stats, bucket]) => { const items = bucket.items || bucket || []; this.setData({ stats: stats.stats || stats || {}, bucket: items, markers: items.filter(i => i.lat != null && i.lng != null).map((i, n) => ({ id: n, latitude: i.lat, longitude: i.lng, title: i.name })) , loading: false }) }).catch((err) => this.setData({ loading: false, error: err.message || 'Atlas 数据加载失败' })) },
   toggleSearch() { this.setData({ searchOpen: !this.data.searchOpen }) },
   input(e) { this.setData({ query: e.detail.value }) },
-  search() { const q = (this.data.query || '').trim(); if (!q) return; this.setData({ loading: true }); amapSearch(q).then((data) => { const item = (data.suggestions || [])[0]; if (item?.location) this.setData({ latitude: item.location.lat, longitude: item.location.lng, scale: 6 }); }).catch(() => wx.showToast({ title: '搜索失败', icon: 'none' })).finally(() => this.setData({ loading: false })) },
+  search() { const q = (this.data.query || '').trim(); if (!q) return; this.setData({ loading: true, searchResults: [] }); amapSearch(q).then((data) => { const results = data.suggestions || []; this.setData({ searchResults: results.slice(0, 8) }); if (results[0]?.location) this.selectSearchResult({ currentTarget: { dataset: { index: 0 } } }); }).catch(() => wx.showToast({ title: '搜索失败', icon: 'none' })).finally(() => this.setData({ loading: false })) },
+  selectSearchResult(e) {
+    const item = this.data.searchResults[e.currentTarget.dataset.index] || e.currentTarget.dataset.item
+    if (!item?.location) return
+    this.setData({ selectedPlace: item, latitude: item.location.lat, longitude: item.location.lng, scale: 10, searchResults: [] })
+  },
   openBucket() { this.setData({ bucketOpen: true }) },
   closeBucket() { this.setData({ bucketOpen: false }) },
   createBucket() {
-    wx.showModal({ title: '加入愿望单', editable: true, placeholderText: '例如：京都清水寺', success: (result) => {
+      wx.showModal({ title: '加入愿望单', editable: true, content: this.data.selectedPlace?.name || '', placeholderText: '例如：京都清水寺', success: (result) => {
       if (!result.confirm || !result.content.trim()) return
-      createAtlasBucketItem({ name: result.content.trim(), lat: this.data.latitude, lng: this.data.longitude }).then(() => { wx.showToast({ title: '已加入', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '加入失败', icon: 'none' }))
+      createAtlasBucketItem({ name: result.content.trim(), lat: this.data.latitude, lng: this.data.longitude, country_code: this.data.selectedPlace?.country || null }).then(() => { wx.showToast({ title: '已加入', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '加入失败', icon: 'none' }))
     } })
   },
   removeBucket(e) {
