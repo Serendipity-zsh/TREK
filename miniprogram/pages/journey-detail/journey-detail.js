@@ -40,5 +40,8 @@ Page({
     wx.showModal({ title: '删除这篇记录？', success: (r) => { if (r.confirm) api.deleteJourneyEntry(id).then(() => this.load()) } })
   },
   noop() {},
+  openCalendar() { wx.navigateTo({ url: '/pages/vacay/vacay' }) },
+  openAtlas() { wx.navigateTo({ url: '/pages/atlas/atlas' }) },
+  openMore() { wx.navigateTo({ url: '/pages/tools/tools' }) },
   back() { wx.navigateBack({ delta: 1 }) },
 })
