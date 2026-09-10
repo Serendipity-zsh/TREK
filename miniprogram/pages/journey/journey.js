@@ -1,13 +1,17 @@
 const { listJourneys, createJourney } = require('../../utils/api')
 
 Page({
-  data: { journeys: [], loading: true, showCreate: false, title: '', error: '' },
+  data: { journeys: [], heroJourney: null, otherJourneys: [], loading: true, showCreate: false, title: '', error: '' },
   onShow() { this.load() },
   load() {
     this.setData({ loading: true, error: '' })
     listJourneys().then((data) => {
-      const journeys = data.journeys || data || []
-      this.setData({ journeys: Array.isArray(journeys) ? journeys : [], loading: false })
+      const journeys = Array.isArray(data.journeys || data) ? (data.journeys || data) : []
+      const decorated = journeys.map((journey, index) => ({
+        ...journey,
+        coverColor: ['#132039', '#235044', '#4b2d4f', '#7a4932'][index % 4],
+      }))
+      this.setData({ journeys: decorated, heroJourney: decorated[0] || null, otherJourneys: decorated.slice(1), loading: false })
     }).catch((err) => this.setData({ loading: false, error: err.message || '旅记加载失败' }))
   },
   openCreate() { this.setData({ showCreate: true, title: '' }) },

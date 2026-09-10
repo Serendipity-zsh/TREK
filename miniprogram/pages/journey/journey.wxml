@@ -5,8 +5,20 @@
     <view wx:elif="{{error}}" class="empty error">{{error}}</view>
     <view wx:elif="{{!journeys.length}}" class="empty"><text class="empty-mark">✦</text><text>还没有旅记，记录一次旅程吧。</text></view>
     <block wx:else>
-      <view wx:for="{{journeys}}" wx:key="id" class="journey-card" data-id="{{item.id}}" bindtap="openJourney">
-        <view class="cover"><text>trek</text></view><view class="journey-body"><text class="journey-title">{{item.title}}</text><text class="stats">{{item.entry_count || 0}} 篇 · {{item.photo_count || 0}} 张 · {{item.place_count || 0}} 个地点</text></view>
+      <view wx:if="{{heroJourney}}" class="hero-card" data-id="{{heroJourney.id}}" bindtap="openJourney">
+        <image wx:if="{{heroJourney.cover_image}}" class="hero-cover" src="{{heroJourney.cover_image}}" mode="aspectFill" />
+        <view wx:else class="hero-cover fallback" style="background:{{heroJourney.coverColor}}"><text>trek</text></view>
+        <view class="hero-shade"></view>
+        <text class="hero-badge">最新旅记</text>
+        <view class="hero-copy"><text class="hero-title">{{heroJourney.title}}</text><text class="stats">{{heroJourney.entry_count || 0}} 篇 · {{heroJourney.photo_count || 0}} 张 · {{heroJourney.place_count || 0}} 个地点</text></view>
+      </view>
+      <view wx:if="{{otherJourneys.length}}" class="other-label"><text></text><text>其他旅记</text><text></text></view>
+      <view wx:if="{{otherJourneys.length}}" class="journey-grid">
+        <view wx:for="{{otherJourneys}}" wx:key="id" class="journey-card compact" data-id="{{item.id}}" bindtap="openJourney">
+          <image wx:if="{{item.cover_image}}" class="cover" src="{{item.cover_image}}" mode="aspectFill" />
+          <view wx:else class="cover" style="background:{{item.coverColor}}"><text>trek</text></view>
+          <view class="journey-body"><text class="journey-title">{{item.title}}</text><text class="stats">{{item.entry_count || 0}} · {{item.photo_count || 0}} · {{item.place_count || 0}}</text></view>
+        </view>
       </view>
     </block>
   </scroll-view>
