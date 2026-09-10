@@ -22,6 +22,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import type { User } from '../../types';
+import type { JourneyGalleryChunkRequest } from '@trek/shared';
 import { StorageService } from '../storage/storage.service';
 import { journeyThumbName } from '../memories/thumbnail.service';
 import { JourneyService } from './journey.service';
@@ -34,7 +35,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import {
   JourneyAddTripDto, JourneyContributorAddDto, JourneyContributorUpdateDto, JourneyCreateDto,
-  JourneyEntryCreateDto, JourneyEntryPhotoUploadDto, JourneyEntryUpdateDto, JourneyGalleryVideoDto,
+  JourneyEntryCreateDto, JourneyEntryPhotoUploadDto, JourneyEntryUpdateDto, JourneyGalleryChunkDto, JourneyGalleryVideoDto,
   JourneyLinkPhotoDto, JourneyPhotoUpdateDto, JourneyPreferencesDto, JourneyProviderPhotosDto,
   JourneyReorderEntriesDto, JourneyShareLinkDto, JourneyUpdateDto,
   BookSaveDto,
@@ -377,6 +378,72 @@ export class JourneyController {
     // the map later. Detached, like the provider branch.
     this.backfillCapture(photos, user.id);
     return { photos };
+  }
+
+  /**
+   * Small-program image upload bridge. wx.cloud.callContainer accepts JSON but
+   * does not expose the browser-style multipart upload used above, so the
+   * native client sends bounded base64 chunks. Chunks are kept in the platform
+   * temp directory until the final part arrives, then the normal Journey photo
+   * persistence path is reused.
+   */
+  @Post(':id/gallery/chunks')
+  async uploadGalleryChunk(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() body: JourneyGalleryChunkDto,
+  ) {
+    const chunkBody = body as unknown as JourneyGalleryChunkRequest;
+    const journeyId = Number(id);
+    const uploadId = String(chunkBody.upload_id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const partIndex = Number(chunkBody.part_index);
+    const totalParts = Number(chunkBody.total_parts);
+    const data = String(chunkBody.data || '');
+    if (!uploadId || !Number.isInteger(partIndex) || !Number.isInteger(totalParts) || partIndex < 0 || totalParts < 1 || totalParts > 256 || partIndex >= totalParts || !data) {
+      throw new HttpException({ error: 'Invalid upload chunk' }, 400);
+    }
+    const bytes = Buffer.from(data, 'base64');
+    if (!bytes.length || bytes.length > 64 * 1024) {
+      throw new HttpException({ error: 'Upload chunk is too large' }, 400);
+    }
+    const mime = String(chunkBody.mime_type || '');
+    const ext = path.extname(String(chunkBody.filename || '')).toLowerCase();
+    if (!mime.startsWith('image/') || mime.includes('svg') || !['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
+      throw new HttpException({ error: 'Only JPG, PNG, WEBP and GIF images are allowed' }, 400);
+    }
+    const dir = path.join(this.storage.tempDir(), 'wechat-journey', String(user.id), String(journeyId), uploadId);
+    fs.mkdirSync(dir, { recursive: true });
+    const partPath = path.join(dir, `${partIndex}.part`);
+    fs.writeFileSync(partPath, bytes);
+    const present = Array.from({ length: totalParts }, (_, index) => path.join(dir, `${index}.part`)).every((file) => fs.existsSync(file));
+    if (!present) return { complete: false, received: partIndex + 1, total: totalParts };
+
+    const assembledPath = path.join(this.storage.tempDir(), `journey-${crypto.randomUUID()}${ext}`);
+    try {
+      const assembled = fs.openSync(assembledPath, 'w');
+      try {
+        let totalBytes = 0;
+        for (let index = 0; index < totalParts; index += 1) {
+          const chunk = fs.readFileSync(path.join(dir, `${index}.part`));
+          totalBytes += chunk.length;
+          if (totalBytes > 10 * 1024 * 1024) throw new HttpException({ error: 'Image is too large' }, 400);
+          fs.writeSync(assembled, chunk);
+        }
+      } finally {
+        fs.closeSync(assembled);
+      }
+      await this.storage.put('journey', path.basename(assembledPath), { tmpPath: assembledPath });
+      const photos = this.journey.uploadGalleryPhotos(journeyId, user.id, [{ path: `journey/${path.basename(assembledPath)}` }]);
+      if (!photos.length) {
+        await this.storage.delete('journey', path.basename(assembledPath)).catch(() => {});
+        throw new HttpException({ error: 'Not allowed' }, 403);
+      }
+      this.backfillCapture(photos, user.id);
+      return { complete: true, photos };
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+      try { fs.unlinkSync(assembledPath); } catch { /* storage driver already moved it */ }
+    }
   }
 
   @Post(':id/gallery/video')

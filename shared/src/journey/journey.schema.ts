@@ -139,6 +139,21 @@ export const journeyGalleryVideoRequestSchema = z.looseObject({
 }).optional();
 export type JourneyGalleryVideoRequest = z.infer<typeof journeyGalleryVideoRequestSchema>;
 
+/**
+ * JSON bridge used by the native mini program for gallery image uploads.
+ * The controller validates the chunk values after decoding so it can preserve
+ * the existing upload-specific error messages.
+ */
+export const journeyGalleryChunkRequestSchema = z.looseObject({
+  upload_id: z.unknown().optional(),
+  part_index: z.unknown().optional(),
+  total_parts: z.unknown().optional(),
+  filename: z.unknown().optional(),
+  mime_type: z.unknown().optional(),
+  data: z.unknown().optional(),
+});
+export type JourneyGalleryChunkRequest = z.infer<typeof journeyGalleryChunkRequestSchema>;
+
 /** Free-form: per-user display preferences, forwarded whole. */
 export const journeyPreferencesRequestSchema = z.looseObject({});
 export type JourneyPreferencesRequest = z.infer<typeof journeyPreferencesRequestSchema>;

@@ -7,6 +7,7 @@ import {
   journeyEntryCreateRequestSchema,
   journeyEntryPhotoUploadRequestSchema,
   journeyEntryUpdateRequestSchema,
+  journeyGalleryChunkRequestSchema,
   journeyGalleryVideoRequestSchema,
   journeyLinkPhotoRequestSchema,
   journeyPhotoUpdateRequestSchema,
@@ -49,6 +50,7 @@ export class JourneyProviderPhotosDto extends createZodDto(journeyProviderPhotos
 export class JourneyLinkPhotoDto extends createZodDto(journeyLinkPhotoRequestSchema) {}
 export class JourneyPhotoUpdateDto extends createZodDto(journeyPhotoUpdateRequestSchema) {}
 export class JourneyEntryPhotoUploadDto extends createZodDto(journeyEntryPhotoUploadRequestSchema) {}
+export class JourneyGalleryChunkDto extends createZodDto(journeyGalleryChunkRequestSchema) {}
 export class JourneyGalleryVideoDto extends createZodDto(journeyGalleryVideoRequestSchema) {}
 
 /** A Studio book save — the whole document, plus the version it was made against. */

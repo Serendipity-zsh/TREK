@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, loading: true, showCreate: false, title: '', body: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, title: '', body: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
@@ -64,6 +64,38 @@ Page({
         api.deleteJourneyShareLink(this.data.id).then(() => { this.setData({ shareLink: null }); wx.showToast({ title: '已关闭分享', icon: 'success' }) }).catch((err) => wx.showToast({ title: err.errMsg || '关闭失败', icon: 'none' }))
       } })
     } })
+  },
+  openUpload() {
+    if (this.data.uploading) return
+    wx.chooseMedia({ count: 9, mediaType: ['image'], sourceType: ['album', 'camera'], success: async (result) => {
+      const files = result.tempFiles || []
+      if (!files.length) return
+      if (files.some((file) => Number(file.size || 0) > 10 * 1024 * 1024)) return wx.showToast({ title: '单张图片不能超过 10MB', icon: 'none' })
+      this.setData({ uploading: true })
+      try {
+        for (const file of files) await this.uploadPhotoFile(file)
+        wx.showToast({ title: '照片已上传', icon: 'success' })
+        this.load()
+      } catch (error) {
+        wx.showToast({ title: error.errMsg || error.message || '上传失败', icon: 'none' })
+      } finally {
+        this.setData({ uploading: false })
+      }
+    } })
+  },
+  uploadPhotoFile(file) {
+    const fs = wx.getFileSystemManager()
+    const chunkSize = 48 * 1024
+    const totalParts = Math.max(1, Math.ceil(Number(file.size || 0) / chunkSize))
+    const uploadId = `${Date.now()}_${Math.random().toString(36).slice(2)}`
+    const readChunk = (position, length) => new Promise((resolve, reject) => fs.readFile({ filePath: file.tempFilePath, position, length, encoding: 'base64', success: (res) => resolve(res.data), fail: reject }))
+    return (async () => {
+      for (let partIndex = 0; partIndex < totalParts; partIndex += 1) {
+        const position = partIndex * chunkSize
+        const data = await readChunk(position, Math.min(chunkSize, Number(file.size || 0) - position))
+        await api.uploadJourneyPhotoChunk(this.data.id, { upload_id: uploadId, part_index: partIndex, total_parts: totalParts, filename: file.tempFilePath || 'photo.jpg', mime_type: file.fileType ? `image/${file.fileType}` : 'image/jpeg', data })
+      }
+    })()
   },
   noop() {},
   openCalendar() { wx.navigateTo({ url: '/pages/vacay/vacay' }) },
