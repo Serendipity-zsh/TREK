@@ -193,12 +193,23 @@ Page({
     } })
   },
   editPlace(place) {
-    Promise.all([
-      new Promise((resolve) => wx.showModal({ title: '编辑地点名称', editable: true, content: place.name || '', placeholderText: '地点名称', success: (result) => resolve(result.confirm ? String(result.content || '').trim() : '') })),
-      new Promise((resolve) => wx.showModal({ title: '编辑地点地址', editable: true, content: place.address || '', placeholderText: '地址（可选）', success: (result) => resolve(result.confirm ? String(result.content || '').trim() : '') })),
-    ]).then(([name, address]) => {
-      if (!name) return
-      return api.updateCollectionPlace(place.id, { name, address: address || null }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); return this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } }) })
+    const ask = (title, content, placeholderText) => new Promise((resolve) => wx.showModal({ title, editable: true, content: content || '', placeholderText, success: (result) => resolve(result.confirm ? String(result.content || '').trim() : null) }))
+    ask('编辑地点名称', place.name, '地点名称').then((name) => {
+      if (!name) return null
+      return ask('编辑地点地址', place.address, '地址（可选）').then((address) => ({ name, address }))
+    }).then((draft) => {
+      if (!draft) return null
+      return ask('编辑地点描述', place.description, '支持简单的旅行备注').then((description) => ({ ...draft, description }))
+    }).then((draft) => {
+      if (!draft) return null
+      return ask('编辑联系电话', place.phone, '电话（可选）').then((phone) => ({ ...draft, phone }))
+    }).then((draft) => {
+      if (!draft) return null
+      return ask('编辑网址', place.website, '网址（可选）').then((website) => api.updateCollectionPlace(place.id, { name: draft.name, address: draft.address || null, description: draft.description || null, phone: draft.phone || null, website: website || null }))
+    }).then((result) => {
+      if (!result) return
+      wx.showToast({ title: '已保存', icon: 'success' })
+      return this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })
     }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
   },
   copyPlaceToTrip(place) {

@@ -8,7 +8,7 @@
       <text class="place-name">{{place.name}}</text>
       <text class="status">{{place.status === 'visited' ? '已去过' : (place.status === 'want' ? '想去' : '有兴趣')}}</text>
       <text wx:if="{{place.address}}" class="address">{{place.address}}</text>
-      <text wx:if="{{place.description}}" class="description">{{place.description}}</text>
+      <view wx:if="{{place.label_names && place.label_names.length}}" class="labels"><text wx:for="{{place.label_names}}" wx:key="*this">{{item}}</text></view><text wx:if="{{place.description}}" class="description">{{place.description}}</text>
       <view wx:if="{{place.website || place.phone}}" class="contact"><text wx:if="{{place.phone}}">电话：{{place.phone}}</text><text wx:if="{{place.website}}">网址：{{place.website}}</text></view>
       <button wx:if="{{place.lat != null}}" class="primary" bindtap="openMap">在地图中打开</button>
     </view>
