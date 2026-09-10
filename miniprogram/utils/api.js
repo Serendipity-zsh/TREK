@@ -175,6 +175,26 @@ function getAirtrailStatus() { return call('/api/integrations/airtrail/status') 
 function getImmichStatus() { return call('/api/integrations/memories/immich/status') }
 function getSynologyStatus() { return call('/api/integrations/memories/synologyphotos/status') }
 function getAdminAuditLog(limit = 50, offset = 0) { return call(`/api/admin/audit-log?limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`) }
+function getAdminFeatureFlags() {
+  return Promise.all([
+    ['bagTracking', '/api/admin/bag-tracking'],
+    ['placesPhotos', '/api/admin/places-photos'],
+    ['placesAutocomplete', '/api/admin/places-autocomplete'],
+    ['placesDetails', '/api/admin/places-details'],
+    ['placesEnrich', '/api/admin/places-enrich'],
+    ['collab', '/api/admin/collab-features'],
+  ].map(([key, path]) => call(path).then((value) => [key, value])))
+    .then((entries) => Object.fromEntries(entries))
+}
+function updateAdminFeature(name, enabled) {
+  const paths = { bagTracking: '/api/admin/bag-tracking', placesPhotos: '/api/admin/places-photos', placesAutocomplete: '/api/admin/places-autocomplete', placesDetails: '/api/admin/places-details', placesEnrich: '/api/admin/places-enrich' }
+  return call(paths[name], 'PUT', { enabled })
+}
+function updateAdminCollabFeature(name, enabled) { return call('/api/admin/collab-features', 'PUT', { [name]: enabled }) }
+function listAdminAddons() { return call('/api/admin/addons') }
+function updateAdminAddon(id, payload) { return call(`/api/admin/addons/${encodeURIComponent(id)}`, 'PUT', payload) }
+function getAdminDefaults() { return call('/api/admin/default-user-settings') }
+function updateAdminDefaults(payload) { return call('/api/admin/default-user-settings', 'PUT', payload) }
 
 module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, listTrips, copyCollectionPlacesToTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, updatePlace, createAssignment, deleteAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, updateReservation, deleteReservation, listTripFiles, uploadTripFileChunk, toggleTripFileStar, deleteTripFile, listCollabNotes, createCollabNote, deleteCollabNote, listCollabMessages, createCollabMessage, deleteCollabMessage, listCollabPolls, createCollabPoll, voteCollabPoll, closeCollabPoll, deleteCollabPoll, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, updateJourney, getJourneyShareLink, createJourneyShareLink, deleteJourneyShareLink, updateJourneyPreferences, listJourneyEntries, createJourneyEntry, updateJourneyEntry, deleteJourneyEntry, getPhotoThumbnailData, updateJourneyPhoto, deleteJourneyPhoto, uploadJourneyPhotoChunk, uploadJourneyVideoChunk, listCollections, createCollection, getCollection, updateCollection, deleteCollection, saveCollectionPlace, updateCollectionPlace, deleteCollectionPlace, setCollectionPlaceStatus, createCollectionLabel, updateCollectionLabel, deleteCollectionLabel, assignCollectionLabels, unassignCollectionLabels, getCollectionAvailableUsers, inviteCollectionUser, getAtlasStats, getAtlasRegions, getAtlasRegionGeo, getAtlasLocate, getAtlasCountry, markAtlasCountry, unmarkAtlasCountry, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, getVacayPlan, updateVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, updateVacayStats, getVacayAvailableUsers, inviteVacayUser, getVacayShares, getVacayShareUsers, shareVacayCalendar, updateVacayShare, deleteVacayShare, getAdminStats, listAdminUsers }
 module.exports.getSettings = getSettings
@@ -194,3 +214,10 @@ module.exports.getImmichStatus = getImmichStatus
 module.exports.getSynologyStatus = getSynologyStatus
 module.exports.getAdminAuditLog = getAdminAuditLog
 module.exports.respondNotification = respondNotification
+module.exports.getAdminFeatureFlags = getAdminFeatureFlags
+module.exports.updateAdminFeature = updateAdminFeature
+module.exports.updateAdminCollabFeature = updateAdminCollabFeature
+module.exports.listAdminAddons = listAdminAddons
+module.exports.updateAdminAddon = updateAdminAddon
+module.exports.getAdminDefaults = getAdminDefaults
+module.exports.updateAdminDefaults = updateAdminDefaults
