@@ -1,0 +1,12 @@
+<view class="page">
+  <view class="tabs"><button data-tab="todo" class="{{tab == 'todo' ? 'active' : ''}}" bindtap="switchTab">待办</button><button data-tab="packing" class="{{tab == 'packing' ? 'active' : ''}}" bindtap="switchTab">行李</button><button data-tab="budget" class="{{tab == 'budget' ? 'active' : ''}}" bindtap="switchTab">预算</button></view>
+  <view wx:if="{{tab == 'budget'}}" class="total">总预算 <text>¥ {{total}}</text></view>
+  <text wx:if="{{error}}" class="error">{{error}}</text>
+  <view wx:if="{{!items.length && !loading}}" class="empty">这里还没有内容，点击下方按钮添加。</view>
+  <view wx:for="{{items}}" wx:key="id" class="item" data-index="{{index}}">
+    <view wx:if="{{tab != 'budget'}}" class="check {{item.checked ? 'checked' : ''}}" data-index="{{index}}" bindtap="toggle">{{item.checked ? '✓' : ''}}</view>
+    <view class="item-main"><text class="item-name {{item.checked ? 'done' : ''}}">{{item.name}}</text><text wx:if="{{tab == 'budget'}}" class="item-meta">{{item.category || '其他'}} · ¥{{item.total_price || 0}}</text><text wx:if="{{tab != 'budget'}}" class="item-meta">{{item.category || '未分类'}}</text></view>
+    <text wx:if="{{tab != 'budget'}}" class="remove" data-index="{{index}}" bindtap="remove">删除</text>
+  </view>
+  <button class="add" bindtap="addItem">+ 添加{{tab == 'todo' ? '待办' : tab == 'packing' ? '行李' : '费用'}}</button>
+</view>

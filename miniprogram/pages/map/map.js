@@ -70,8 +70,9 @@ Page({
       wx.showToast({ title: '请从行程详情进入地图后保存', icon: 'none' })
       return
     }
-    api.createPlace(this.data.tripId, { name: item.name, address: item.address || '', lat: item.location.lat, lng: item.location.lng, category: item.type || 'poi' })
-      .then(() => wx.showToast({ title: '已保存到行程', icon: 'success' }))
+    api.createPlace(this.data.tripId, { name: item.name, address: item.address || '', lat: item.location.lat, lng: item.location.lng })
+      .then(({ place }) => this.data.dayId ? api.createAssignment(this.data.tripId, this.data.dayId, { place_id: place.id }) : null)
+      .then(() => wx.showToast({ title: this.data.dayId ? '已加入当天计划' : '已保存到行程', icon: 'success' }))
       .catch((error) => wx.showToast({ title: error.errMsg || '保存地点失败', icon: 'none' }))
   },
 })

@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/index/index", "pages/map/map", "pages/trip/trip"],
+  "pages": ["pages/index/index", "pages/map/map", "pages/trip/trip", "pages/tools/tools"],
   "window": {
     "navigationBarTitleText": "TREK",
     "navigationBarBackgroundColor": "#ffffff",
