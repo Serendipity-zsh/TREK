@@ -167,6 +167,9 @@ function updateVacayShare(id, hidden) { return call(`/api/addons/vacay/shares/${
 function deleteVacayShare(id) { return call(`/api/addons/vacay/shares/${id}`, 'DELETE') }
 function getAdminStats() { return call('/api/admin/stats') }
 function listAdminUsers() { return call('/api/admin/users') }
+function createAdminUser(payload) { return call('/api/admin/users', 'POST', payload) }
+function updateAdminUser(id, payload) { return call(`/api/admin/users/${id}`, 'PUT', payload) }
+function deleteAdminUser(id) { return call(`/api/admin/users/${id}`, 'DELETE') }
 
 module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, listTrips, copyCollectionPlacesToTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, updatePlace, createAssignment, deleteAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, updateReservation, deleteReservation, listTripFiles, uploadTripFileChunk, toggleTripFileStar, deleteTripFile, listCollabNotes, createCollabNote, deleteCollabNote, listCollabMessages, createCollabMessage, deleteCollabMessage, listCollabPolls, createCollabPoll, voteCollabPoll, closeCollabPoll, deleteCollabPoll, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, updateJourney, getJourneyShareLink, createJourneyShareLink, deleteJourneyShareLink, updateJourneyPreferences, listJourneyEntries, createJourneyEntry, updateJourneyEntry, deleteJourneyEntry, getPhotoThumbnailData, updateJourneyPhoto, deleteJourneyPhoto, uploadJourneyPhotoChunk, uploadJourneyVideoChunk, listCollections, createCollection, getCollection, updateCollection, deleteCollection, saveCollectionPlace, updateCollectionPlace, deleteCollectionPlace, setCollectionPlaceStatus, createCollectionLabel, updateCollectionLabel, deleteCollectionLabel, assignCollectionLabels, unassignCollectionLabels, getCollectionAvailableUsers, inviteCollectionUser, getAtlasStats, getAtlasRegions, getAtlasRegionGeo, getAtlasLocate, getAtlasCountry, markAtlasCountry, unmarkAtlasCountry, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, getVacayPlan, updateVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, updateVacayStats, getVacayAvailableUsers, inviteVacayUser, getVacayShares, getVacayShareUsers, shareVacayCalendar, updateVacayShare, deleteVacayShare, getAdminStats, listAdminUsers }
 module.exports.getSettings = getSettings
@@ -178,3 +181,6 @@ module.exports.deleteBudget = deleteBudget
 module.exports.listJourneyAvailableTrips = listJourneyAvailableTrips
 module.exports.addJourneyTrip = addJourneyTrip
 module.exports.removeJourneyTrip = removeJourneyTrip
+module.exports.createAdminUser = createAdminUser
+module.exports.updateAdminUser = updateAdminUser
+module.exports.deleteAdminUser = deleteAdminUser
