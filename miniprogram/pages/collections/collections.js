@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { collections: [], places: [], visiblePlaces: [], active: null, labels: [], labelFilter: [], loading: true, view: 'list', error: '', query: '', status: 'all', menuOpen: false, labelMenu: false, showAdd: false, addQuery: '', addResults: [], addLoading: false, markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { collections: [], places: [], visiblePlaces: [], active: null, labels: [], labelFilter: [], loading: true, view: 'list', error: '', query: '', status: 'all', menuOpen: false, labelMenu: false, selectMode: false, selectedIds: [], showAdd: false, addQuery: '', addResults: [], addLoading: false, markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onShow() { this.load() },
   load() {
     this.setData({ loading: true, error: '' })
@@ -33,6 +33,30 @@ Page({
     this.filterPlaces(this.data.query, this.data.status, labelFilter)
   },
   clearLabelFilter() { this.setData({ labelFilter: [] }); this.filterPlaces(this.data.query, this.data.status, []) },
+  toggleSelectMode() { this.setData({ selectMode: !this.data.selectMode, selectedIds: [] }) },
+  togglePlaceSelection(e) {
+    const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
+    if (!place) return
+    const id = Number(place.id)
+    const selectedIds = this.data.selectedIds.includes(id) ? this.data.selectedIds.filter((value) => value !== id) : this.data.selectedIds.concat(id)
+    this.setData({ selectedIds })
+  },
+  selectAllVisible() {
+    const all = this.data.visiblePlaces.map((place) => Number(place.id)).filter(Number.isFinite)
+    const selectedIds = all.length && all.every((id) => this.data.selectedIds.includes(id)) ? [] : all
+    this.setData({ selectedIds })
+  },
+  deleteSelectedPlaces() {
+    const ids = this.data.selectedIds.slice()
+    if (!ids.length || !this.data.active) return
+    wx.showModal({ title: `删除 ${ids.length} 个地点？`, content: '删除后可在网页端回收站恢复。', success: (result) => {
+      if (!result.confirm) return
+      Promise.all(ids.map((id) => api.deleteCollectionPlace(id))).then(() => {
+        this.setData({ selectMode: false, selectedIds: [] })
+        return this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })
+      }).then(() => wx.showToast({ title: '已删除', icon: 'success' })).catch((err) => wx.showToast({ title: err.errMsg || '删除失败', icon: 'none' }))
+    } })
+  },
   filterPlaces(query, status, labelFilter = this.data.labelFilter) {
     const visiblePlaces = this.data.places.filter((place) => {
       const text = `${place.name || ''} ${place.address || ''}`.toLowerCase()
@@ -181,6 +205,7 @@ Page({
     } })
   },
   openPlace(e) {
+    if (this.data.selectMode) return this.togglePlaceSelection(e)
     const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
     if (!place) return
     const actions = ['查看详情', '编辑地点', '打开地图', '复制到行程', '管理标签']
