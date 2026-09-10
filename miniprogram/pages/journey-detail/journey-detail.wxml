@@ -21,16 +21,13 @@
   <scroll-view wx:elif="{{view === 'gallery'}}" scroll-y class="gallery-feed">
     <view wx:if="{{loading}}" class="empty">正在加载…</view>
     <view wx:elif="{{!gallery.length}}" class="empty">还没有照片，点击上方上传照片。</view>
-    <view wx:for="{{gallery}}" wx:key="id" class="gallery-card" data-index="{{index}}" bindtap="openPhotoActions">
+    <view wx:else class="gallery-grid"><view wx:for="{{gallery}}" wx:key="id" class="gallery-tile" data-index="{{index}}" bindtap="openPhotoActions">
       <image wx:if="{{item.url || item.photo_url}}" class="gallery-image" src="{{item.url || item.photo_url}}" mode="aspectFill" />
-      <view wx:elif="{{item.media_type === 'video'}}" class="gallery-placeholder video-placeholder">▶<text>视频{{item.durationLabel ? ' · ' + item.durationLabel : ''}}</text></view>
+      <view wx:elif="{{item.media_type === 'video'}}" class="gallery-placeholder video-placeholder">▶</view>
       <view wx:else class="gallery-placeholder">⌁</view>
-      <view class="gallery-copy">
-        <view class="gallery-caption-row"><text class="gallery-caption">{{item.caption || '旅程照片'}}</text><text class="gallery-more">•••</text></view>
-        <text class="gallery-date">{{item.taken_at || item.created_at || '未设置日期'}}</text>
-        <text class="gallery-meta">{{item.media_type === 'video' ? '视频' : '照片'}}{{item.lat ? ' · 已记录位置' : ''}}</text>
-      </view>
-    </view>
+      <view wx:if="{{item.media_type === 'video'}}" class="video-badge">▶ {{item.durationLabel}}</view>
+      <view wx:if="{{item.caption}}" class="gallery-caption-overlay">{{item.caption}}</view>
+    </view></view>
   </scroll-view>
   <scroll-view wx:else scroll-y class="feed">
     <view wx:if="{{loading}}" class="empty">正在加载…</view>
