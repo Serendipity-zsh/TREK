@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { collections: [], places: [], visiblePlaces: [], active: null, loading: true, view: 'list', error: '', query: '', status: 'all', menuOpen: false, showAdd: false, addQuery: '', addResults: [], addLoading: false, markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { collections: [], places: [], visiblePlaces: [], active: null, labels: [], labelFilter: [], loading: true, view: 'list', error: '', query: '', status: 'all', menuOpen: false, labelMenu: false, showAdd: false, addQuery: '', addResults: [], addLoading: false, markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onShow() { this.load() },
   load() {
     this.setData({ loading: true, error: '' })
@@ -13,19 +13,31 @@ Page({
     const id = e.currentTarget.dataset.id
     api.getCollection(id).then((data) => {
       const active = data.collection || data
-      const places = Array.isArray(data.places) ? data.places : (active.places || [])
-      this.setData({ active, places, visiblePlaces: places, menuOpen: false, view: 'list' })
-      this.updateMarkers(places)
+      const labels = Array.isArray(active.labels) ? active.labels : (Array.isArray(data.labels) ? data.labels : [])
+      const rawPlaces = Array.isArray(data.places) ? data.places : (active.places || [])
+      const labelNames = Object.fromEntries(labels.map((label) => [Number(label.id), label.name]))
+      const places = rawPlaces.map((place) => ({ ...place, label_names: (place.label_ids || []).map((id) => labelNames[Number(id)]).filter(Boolean) }))
+      this.setData({ active, labels, labelFilter: [], places, visiblePlaces: places, menuOpen: false, labelMenu: false, view: 'list' })
+      this.filterPlaces(this.data.query, this.data.status, [])
     }).catch((err) => this.setData({ error: err.errMsg || '清单加载失败' }))
   },
   toggleView() { this.setData({ view: this.data.view === 'list' ? 'map' : 'list' }) },
   toggleMenu() { this.setData({ menuOpen: !this.data.menuOpen }) },
   inputSearch(e) { const query = String(e.detail.value || '').trim().toLowerCase(); this.setData({ query }); this.filterPlaces(query, this.data.status) },
-  setStatus(e) { const status = e.currentTarget.dataset.status; this.setData({ status, menuOpen: false }); this.filterPlaces(this.data.query, status) },
-  filterPlaces(query, status) {
+  setStatus(e) { const status = e.currentTarget.dataset.status; this.setData({ status, menuOpen: false }); this.filterPlaces(this.data.query, status, this.data.labelFilter) },
+  toggleLabelMenu() { this.setData({ labelMenu: !this.data.labelMenu, menuOpen: false }) },
+  filterByLabel(e) {
+    const id = Number(e.currentTarget.dataset.id)
+    const labelFilter = this.data.labelFilter.includes(id) ? this.data.labelFilter.filter((value) => value !== id) : this.data.labelFilter.concat(id)
+    this.setData({ labelFilter })
+    this.filterPlaces(this.data.query, this.data.status, labelFilter)
+  },
+  clearLabelFilter() { this.setData({ labelFilter: [] }); this.filterPlaces(this.data.query, this.data.status, []) },
+  filterPlaces(query, status, labelFilter = this.data.labelFilter) {
     const visiblePlaces = this.data.places.filter((place) => {
       const text = `${place.name || ''} ${place.address || ''}`.toLowerCase()
-      return (!query || text.includes(query)) && (status === 'all' || place.status === status)
+      const placeLabels = Array.isArray(place.label_ids) ? place.label_ids.map(Number) : []
+      return (!query || text.includes(query)) && (status === 'all' || place.status === status) && (!labelFilter.length || labelFilter.some((id) => placeLabels.includes(id)))
     })
     this.setData({ visiblePlaces })
     this.updateMarkers(visiblePlaces)
@@ -39,6 +51,32 @@ Page({
     wx.showModal({ title: '新建收藏清单', editable: true, placeholderText: '例如：东京咖啡店', success: (result) => {
       if (!result.confirm || !result.content.trim()) return
       api.createCollection({ name: result.content.trim() }).then(() => this.load()).catch((err) => wx.showToast({ title: err.errMsg || '创建失败', icon: 'none' }))
+    } })
+  },
+  createLabel() {
+    if (!this.data.active) return
+    wx.showModal({ title: '新建标签', editable: true, placeholderText: '例如：必去', success: (result) => {
+      const name = String(result.content || '').trim()
+      if (!result.confirm || !name) return
+      api.createCollectionLabel({ collection_id: Number(this.data.active.id), name, color: '#6366f1' }).then(() => this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })).catch((err) => wx.showToast({ title: err.errMsg || '创建标签失败', icon: 'none' }))
+    } })
+  },
+  deleteLabel(e) {
+    const label = this.data.labels[e.currentTarget.dataset.index]
+    if (!label) return
+    wx.showModal({ title: `删除标签「${label.name}」？`, success: (result) => {
+      if (!result.confirm) return
+      api.deleteCollectionLabel(label.id).then(() => this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })).catch((err) => wx.showToast({ title: err.errMsg || '删除标签失败', icon: 'none' }))
+    } })
+  },
+  managePlaceLabels(e) {
+    const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
+    if (!place || !this.data.labels.length) return wx.showToast({ title: '请先创建标签', icon: 'none' })
+    wx.showActionSheet({ itemList: this.data.labels.map((label) => `${(place.label_ids || []).includes(label.id) ? '取消' : '添加'} ${label.name}`), success: (result) => {
+      const label = this.data.labels[result.tapIndex]
+      const assigned = Array.isArray(place.label_ids) && place.label_ids.includes(label.id)
+      const request = assigned ? api.unassignCollectionLabels([label.id], [place.id]) : api.assignCollectionLabels([label.id], [place.id])
+      request.then(() => this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })).catch((err) => wx.showToast({ title: err.errMsg || '标签更新失败', icon: 'none' }))
     } })
   },
   editActiveCollection() {
