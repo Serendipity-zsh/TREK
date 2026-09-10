@@ -183,12 +183,22 @@ Page({
   openPlace(e) {
     const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
     if (!place) return
-    const actions = ['打开地图', '复制到行程', '管理标签']
+    const actions = ['编辑地点', '打开地图', '复制到行程', '管理标签']
     wx.showActionSheet({ itemList: actions, success: (result) => {
-      if (result.tapIndex === 0) this.openMap(e)
-      if (result.tapIndex === 1) this.copyPlaceToTrip(place)
-      if (result.tapIndex === 2) this.managePlaceLabels(e)
+      if (result.tapIndex === 0) return this.editPlace(place)
+      if (result.tapIndex === 1) return this.openMap(e)
+      if (result.tapIndex === 2) return this.copyPlaceToTrip(place)
+      if (result.tapIndex === 3) return this.managePlaceLabels(e)
     } })
+  },
+  editPlace(place) {
+    Promise.all([
+      new Promise((resolve) => wx.showModal({ title: '编辑地点名称', editable: true, content: place.name || '', placeholderText: '地点名称', success: (result) => resolve(result.confirm ? String(result.content || '').trim() : '') })),
+      new Promise((resolve) => wx.showModal({ title: '编辑地点地址', editable: true, content: place.address || '', placeholderText: '地址（可选）', success: (result) => resolve(result.confirm ? String(result.content || '').trim() : '') })),
+    ]).then(([name, address]) => {
+      if (!name) return
+      return api.updateCollectionPlace(place.id, { name, address: address || null }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); return this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } }) })
+    }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
   },
   copyPlaceToTrip(place) {
     api.listTrips().then((data) => {
