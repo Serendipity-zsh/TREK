@@ -1,3 +1,4 @@
+<view wx:if="{{moreOpen}}" class="more-mask" catchtap="closeMore"><view class="more-menu" catchtap="closeMore"><view class="more-item" data-target="journey" catchtap="openMorePage"><text>◎</text><text>旅记</text><text>›</text></view><view class="more-item" data-target="collections" catchtap="openMorePage"><text>⌑</text><text>收藏与清单</text><text>›</text></view><view class="more-item" data-target="settings" catchtap="openMorePage"><text>⚙</text><text>设置</text><text>›</text></view><view class="more-item" data-target="notifications" catchtap="openMorePage"><text>♧</text><text>通知</text><text>›</text></view><view class="more-item" data-target="tools" catchtap="openMorePage"><text>☷</text><text>旅行工具</text><text>›</text></view></view></view>
 <view class="bottom-nav">
   <view class="nav-item {{active === 'home' ? 'selected' : ''}}" data-target="home" bindtap="navigate">
     <text class="nav-icon">▦</text><text>行程</text>
