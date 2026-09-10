@@ -1,17 +1,1 @@
-<view class="page">
-  <view class="top-bar">
-    <view class="top-icon" bindtap="goHome">‹</view>
-    <view class="year-pill"><text bindtap="previousYear">‹</text><text class="year">{{year}}</text><text bindtap="nextYear">›</text></view>
-    <view class="top-icon">☷</view>
-  </view>
-  <view class="person-card"><view class="avatar">D</view><view class="person-copy"><text class="person-name">Demo User</text><view class="progress"></view><text class="remaining">-26 剩余</text></view><view class="stepper"><text>−</text><text class="days">天</text><text>＋</text></view></view>
-  <view class="legend"><text class="legend-active">■ Demo User</text><text>■ 公司假期</text></view>
-  <view class="weekday-row"><text wx:for="{{weekdays}}" wx:key="*this">{{item}}</text></view>
-  <view class="month-grid">
-    <view wx:for="{{months}}" wx:key="title" class="month-card">
-      <text class="month-title">{{item.title}}</text>
-      <view wx:for="{{item.weeks}}" wx:for-item="week" wx:key="index" class="week-row"><text wx:for="{{week}}" wx:for-item="day" wx:key="index" class="day {{day ? '' : 'blank'}}">{{day}}</text></view>
-    </view>
-  </view>
-  <bottom-nav active="calendar" bind:create="openTools" />
-</view>
+<view class="page redirect-page"><text>正在打开假期日历…</text></view>
