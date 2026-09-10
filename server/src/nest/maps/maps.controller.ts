@@ -27,7 +27,7 @@ import { StorageService } from '../storage/storage.service';
 import { isClientAbortError } from '../storage/storage.types';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { MapsSearchDto, MapsAutocompleteDto, MapsResolveUrlDto } from './maps.dto';
+import { MapsSearchDto, MapsAutocompleteDto, MapsResolveUrlDto, AmapSearchDto, AmapRouteDto } from './maps.dto';
 
 /** Google's session-token shape: URL-safe ASCII, at most 36 characters. The
  *  autocomplete body is validated by the Zod pipe; the details query is not,
@@ -85,7 +85,7 @@ export class MapsController {
 
   @Post('amap/search')
   @HttpCode(200)
-  async amapSearch(@Body() body: { query?: string; city?: string }) {
+  async amapSearch(@Body() body: AmapSearchDto) {
     const query = typeof body?.query === 'string' ? body.query.trim() : '';
     if (!query) throw new HttpException({ error: 'Search query is required' }, 400);
     if (query.length > 200) throw new HttpException({ error: 'Input too long (max 200 chars)' }, 400);
@@ -269,7 +269,7 @@ export class MapsController {
 
   @Post('amap/route')
   @HttpCode(200)
-  async amapRoute(@Body() body: { origin?: { lat?: number; lng?: number }; destination?: { lat?: number; lng?: number }; mode?: 'driving' | 'walking' }) {
+  async amapRoute(@Body() body: AmapRouteDto) {
     const origin = body?.origin;
     const destination = body?.destination;
     if (![origin?.lat, origin?.lng, destination?.lat, destination?.lng].every((value) => typeof value === 'number' && Number.isFinite(value))) {

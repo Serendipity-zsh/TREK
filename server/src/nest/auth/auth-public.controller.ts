@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpException, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, MfaVerifyLoginDto } from './auth.dto';
+import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, MfaVerifyLoginDto, WechatLoginDto } from './auth.dto';
 import { RateLimitService } from '../common/rate-limit.service';
 import { OptionalJwtGuard } from './optional-jwt.guard';
 import { getClientIp } from '../audit/client-ip';
@@ -64,7 +64,7 @@ export class AuthPublicController {
   @Post('wechat-login')
   @Public('wx.cloud.callContainer supplies the authenticated mini-program identity')
   @HttpCode(200)
-  wechatLogin(@Req() req: Request, @Body() body: { nickname?: string; avatar_url?: string }) {
+  wechatLogin(@Req() req: Request, @Body() body: WechatLoginDto) {
     const openid = String(req.headers['x-wx-openid'] || req.headers['x-wx-from-openid'] || '').trim();
     if (!openid) {
       throw new HttpException({ error: 'WeChat identity is missing. Call this endpoint through wx.cloud.callContainer.' }, 401);

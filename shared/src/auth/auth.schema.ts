@@ -26,6 +26,15 @@ export const loginRequestSchema = z.object({
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 
+/** Profile hints supplied by the native WeChat mini-program after callContainer
+ * authenticates the caller. The openid itself is injected by CloudBase and is
+ * intentionally not part of the client body. */
+export const wechatLoginRequestSchema = z.object({
+  nickname: z.string().max(100).optional(),
+  avatar_url: z.string().max(500).optional(),
+});
+export type WechatLoginRequest = z.infer<typeof wechatLoginRequestSchema>;
+
 export const forgotPasswordRequestSchema = z.object({
   email: z.string(),
 });

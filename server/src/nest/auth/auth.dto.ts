@@ -19,6 +19,7 @@ import {
   passkeyLoginVerifyRequestSchema,
   passkeyRenameRequestSchema,
   passkeyDeleteRequestSchema,
+  wechatLoginRequestSchema,
 } from '@trek/shared';
 
 /**
@@ -48,3 +49,4 @@ export class PasskeyRegisterVerifyDto extends createZodDto(passkeyRegisterVerify
 export class PasskeyLoginVerifyDto extends createZodDto(passkeyLoginVerifyRequestSchema) {}
 export class PasskeyRenameDto extends createZodDto(passkeyRenameRequestSchema) {}
 export class PasskeyDeleteDto extends createZodDto(passkeyDeleteRequestSchema) {}
+export class WechatLoginDto extends createZodDto(wechatLoginRequestSchema) {}

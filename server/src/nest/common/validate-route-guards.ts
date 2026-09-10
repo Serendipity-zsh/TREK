@@ -100,6 +100,8 @@ export const PUBLIC_ROUTE_ALLOW_LIST: string[] = [
   'AuthPublicController.register',
   'AuthPublicController.resetPassword',
   'AuthPublicController.verifyMfaLogin',
+  // CloudBase supplies the WeChat openid as the caller credential.
+  'AuthPublicController.wechatLogin',
   'ConfigController.getConfig',
   // OAuth/OIDC discovery documents + the JSON 404 catchalls that keep
   // /.well-known probes from ever seeing SPA HTML.

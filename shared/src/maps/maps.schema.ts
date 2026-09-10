@@ -55,6 +55,20 @@ export const mapsResolveUrlRequestSchema = z.object({
 });
 export type MapsResolveUrlRequest = z.infer<typeof mapsResolveUrlRequestSchema>;
 
+/** Native mini-program AMap proxy request bodies. */
+export const amapSearchRequestSchema = z.object({
+  query: z.string().optional(),
+  city: z.string().optional(),
+});
+export type AmapSearchRequest = z.infer<typeof amapSearchRequestSchema>;
+
+export const amapRouteRequestSchema = z.object({
+  origin: latLng.partial().optional(),
+  destination: latLng.partial().optional(),
+  mode: z.enum(['driving', 'walking']).optional(),
+});
+export type AmapRouteRequest = z.infer<typeof amapRouteRequestSchema>;
+
 /** Provider-shaped place blob (Google/OSM fields differ); kept open by design. */
 const placeRecord = z.record(z.string(), z.unknown());
 
