@@ -90,7 +90,11 @@ function voteCollabPoll(tripId, id, optionIndex) { return call(`/api/trips/${tri
 function closeCollabPoll(tripId, id) { return call(`/api/trips/${tripId}/collab/polls/${id}/close`, 'PUT') }
 function deleteCollabPoll(tripId, id) { return call(`/api/trips/${tripId}/collab/polls/${id}`, 'DELETE') }
 function getWeather(lat, lng, date) { return call(`/api/weather?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}${date ? `&date=${encodeURIComponent(date)}` : ''}&lang=zh`) }
-function listNotifications(unreadOnly) { return call(`/api/notifications/in-app?limit=50${unreadOnly ? '&unread_only=true' : ''}`) }
+function listNotifications(unreadOnly, offset) {
+  const params = [`limit=50`, `offset=${Number(offset) || 0}`]
+  if (unreadOnly) params.push('unread_only=true')
+  return call(`/api/notifications/in-app?${params.join('&')}`)
+}
 function markAllNotificationsRead() { return call('/api/notifications/in-app/read-all', 'PUT') }
 function deleteAllNotifications() { return call('/api/notifications/in-app/all', 'DELETE') }
 function markNotificationRead(id) { return call(`/api/notifications/in-app/${id}/read`, 'PUT') }
