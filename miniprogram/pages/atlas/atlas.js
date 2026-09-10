@@ -1,8 +1,47 @@
-const { getAtlasStats, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, amapSearch } = require('../../utils/api')
+const { getAtlasStats, getAtlasRegions, getAtlasRegionGeo, getAtlasLocate, getAtlasCountry, markAtlasCountry, unmarkAtlasCountry, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, amapSearch } = require('../../utils/api')
+
+const STATUS_COLORS = {
+  visited: { fillColor: '#7568d966', strokeColor: '#5c50c9', strokeWidth: 2 },
+  planned: { fillColor: '#42bca866', strokeColor: '#239c86', strokeWidth: 2 },
+  idea: { fillColor: '#a7adb766', strokeColor: '#858b95', strokeWidth: 1 },
+}
+
+function trimRing(ring) {
+  if (!Array.isArray(ring) || ring.length < 3) return []
+  const step = Math.max(1, Math.ceil(ring.length / 180))
+  return ring.filter((_, index) => index % step === 0 || index === ring.length - 1)
+    .map(([longitude, latitude]) => ({ latitude, longitude }))
+    .filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude))
+}
+
+function toPolygons(geo, regions) {
+  const statusByRegion = {}
+  Object.keys(regions || {}).forEach((country) => (regions[country] || []).forEach((region) => { statusByRegion[region.code] = region.status || 'visited' }))
+  const polygons = []
+  ;(geo?.features || []).forEach((feature) => {
+    const geometry = feature?.geometry
+    const code = feature?.properties?.ISO_3166_2 || feature?.properties?.iso_3166_2 || feature?.properties?.code || feature?.properties?.region_code
+    const colors = STATUS_COLORS[statusByRegion[code]] || STATUS_COLORS.visited
+    const groups = geometry?.type === 'Polygon' ? [geometry.coordinates] : geometry?.type === 'MultiPolygon' ? geometry.coordinates : []
+    groups.forEach((polygon) => {
+      const points = trimRing(polygon?.[0])
+      if (points.length >= 3) polygons.push({ points, ...colors })
+    })
+  })
+  return polygons
+}
 Page({
-  data: { stats: {}, bucket: [], query: '', searchOpen: false, searchResults: [], bucketOpen: false, loading: true, error: '', latitude: 25, longitude: 10, scale: 3, markers: [], selectedPlace: null },
+  data: { stats: {}, regions: {}, polygons: [], bucket: [], query: '', searchOpen: false, searchResults: [], bucketOpen: false, loading: true, error: '', latitude: 25, longitude: 10, scale: 3, markers: [], selectedPlace: null },
   onLoad() { this.load() },
-  load() { Promise.all([getAtlasStats(), getAtlasBucketList()]).then(([stats, bucket]) => { const items = bucket.items || bucket || []; this.setData({ stats: stats.stats || stats || {}, bucket: items, markers: items.filter(i => i.lat != null && i.lng != null).map((i, n) => ({ id: n, latitude: i.lat, longitude: i.lng, title: i.name })) , loading: false }) }).catch((err) => this.setData({ loading: false, error: err.message || 'Atlas 数据加载失败' })) },
+  load() {
+    Promise.all([getAtlasStats(), getAtlasRegions(), getAtlasBucketList()]).then(async ([stats, regions, bucket]) => {
+      const regionMap = regions.regions || {}
+      const countries = Object.keys(regionMap)
+      const geo = countries.length ? await getAtlasRegionGeo(countries) : { features: [] }
+      const items = bucket.items || bucket || []
+      this.setData({ stats: stats.stats || stats || {}, regions: regionMap, polygons: toPolygons(geo, regionMap), bucket: items, markers: items.filter(i => i.lat != null && i.lng != null).map((i, n) => ({ id: n, latitude: i.lat, longitude: i.lng, title: i.name })), loading: false })
+    }).catch((err) => this.setData({ loading: false, error: err.message || 'Atlas 数据加载失败' }))
+  },
   toggleSearch() { this.setData({ searchOpen: !this.data.searchOpen }) },
   input(e) { this.setData({ query: e.detail.value }) },
   search() { const q = (this.data.query || '').trim(); if (!q) return; this.setData({ loading: true, searchResults: [] }); amapSearch(q).then((data) => { const results = data.suggestions || []; this.setData({ searchResults: results.slice(0, 8) }); if (results[0]?.location) this.selectSearchResult({ currentTarget: { dataset: { index: 0 } } }); }).catch(() => wx.showToast({ title: '搜索失败', icon: 'none' })).finally(() => this.setData({ loading: false })) },
@@ -10,6 +49,22 @@ Page({
     const item = this.data.searchResults[e.currentTarget.dataset.index] || e.currentTarget.dataset.item
     if (!item?.location) return
     this.setData({ selectedPlace: item, latitude: item.location.lat, longitude: item.location.lng, scale: 10, searchResults: [] })
+  },
+  tapMap(e) {
+    const { latitude, longitude } = e.detail || {}
+    if (latitude == null || longitude == null) return
+    getAtlasLocate(latitude, longitude).then((located) => {
+      if (!located.country_code) return wx.showToast({ title: '这里还没有国家边界数据', icon: 'none' })
+      return getAtlasCountry(located.country_code).then((country) => {
+        const placeCount = (country.places || []).length
+        const action = country.manually_marked ? '取消手动标记' : '标记为已访问'
+        wx.showActionSheet({ itemList: [`${located.country_code} · ${placeCount} 个地点`, action], success: (result) => {
+          if (result.tapIndex !== 1) return
+          const request = country.manually_marked ? unmarkAtlasCountry(located.country_code) : markAtlasCountry(located.country_code)
+          request.then(() => { wx.showToast({ title: country.manually_marked ? '已取消标记' : '已标记为已访问', icon: 'success' }); this.load() }).catch(() => wx.showToast({ title: '更新失败', icon: 'none' }))
+        } })
+      })
+    }).catch(() => wx.showToast({ title: '国家信息加载失败', icon: 'none' }))
   },
   openBucket() { this.setData({ bucketOpen: true }) },
   closeBucket() { this.setData({ bucketOpen: false }) },
