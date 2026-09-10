@@ -36,8 +36,14 @@ Page({
   openPhotoActions(e) {
     const photo = this.data.gallery[e.currentTarget.dataset.index]
     if (!photo || !photo.id) return
-    wx.showActionSheet({ itemList: ['编辑说明', '删除照片'], success: (result) => {
+    wx.showActionSheet({ itemList: ['查看媒体', '编辑说明', '删除照片'], success: (result) => {
       if (result.tapIndex === 0) {
+        const url = photo.url || photo.photo_url
+        if (!url) return wx.showToast({ title: '媒体暂不可预览', icon: 'none' })
+        if (photo.media_type === 'video') return wx.previewMedia({ sources: [{ url, type: 'video' }] })
+        return wx.previewImage({ current: url, urls: this.data.gallery.map((item) => item.url || item.photo_url).filter(Boolean) })
+      }
+      if (result.tapIndex === 1) {
         wx.showModal({ title: '编辑照片说明', editable: true, content: photo.caption || '', placeholderText: '例如：抵达京都的第一天', success: (choice) => {
           if (!choice.confirm) return
           api.updateJourneyPhoto(photo.id, { caption: String(choice.content || '').trim() }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
