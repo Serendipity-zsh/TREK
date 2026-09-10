@@ -107,8 +107,15 @@ Page({
     wx.showModal({ title: `添加${labels[kind]}`, editable: true, placeholderText: '请输入名称', success: (result) => {
       if (!result.confirm || !result.content.trim()) return
       const name = result.content.trim()
-      const request = kind === 'todo' ? api.createTodo(this.data.id, { name }) : kind === 'packing' ? api.createPacking(this.data.id, { name }) : api.createBudget(this.data.id, { name, total_price: 0 })
-      request.then(() => this.loadInlineList(kind)).catch((error) => wx.showToast({ title: error.errMsg || '添加失败', icon: 'none' }))
+      if (kind !== 'budget') {
+        const request = kind === 'todo' ? api.createTodo(this.data.id, { name }) : api.createPacking(this.data.id, { name })
+        return request.then(() => this.loadInlineList(kind)).catch((error) => wx.showToast({ title: error.errMsg || '添加失败', icon: 'none' }))
+      }
+      this.askReservationField('金额', '0', '例如：128.50').then((amount) => {
+        const total_price = Number(String(amount || '0').replace(',', '.'))
+        if (!Number.isFinite(total_price) || total_price < 0) return wx.showToast({ title: '请输入有效金额', icon: 'none' })
+        return api.createBudget(this.data.id, { name, total_price, category: 'other' }).then(() => this.loadInlineList(kind))
+      }).catch((error) => wx.showToast({ title: error.errMsg || '添加失败', icon: 'none' }))
     } })
   },
   toggleInlineItem(event) {
@@ -120,9 +127,21 @@ Page({
   removeInlineItem(event) {
     const item = this.data.listItems[event.currentTarget.dataset.index]
     if (!item) return
-    const request = this.data.activeTab === 'costs' ? null : this.data.listKind === 'todo' ? api.deleteTodo(this.data.id, item.id) : api.deletePacking(this.data.id, item.id)
-    if (!request) return wx.showToast({ title: '费用删除请从费用工具操作', icon: 'none' })
+    const request = this.data.activeTab === 'costs' ? api.deleteBudget(this.data.id, item.id) : this.data.listKind === 'todo' ? api.deleteTodo(this.data.id, item.id) : api.deletePacking(this.data.id, item.id)
     wx.showModal({ title: '删除项目？', success: (result) => { if (result.confirm) request.then(() => this.loadInlineList(this.data.listKind)).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' })) } })
+  },
+  editBudgetItem(event) {
+    if (this.data.activeTab !== 'costs') return
+    const item = this.data.listItems[event.currentTarget.dataset.index]
+    if (!item) return
+    Promise.all([
+      this.askReservationField('费用名称', item.name || item.title || '', '例如：京都酒店'),
+      this.askReservationField('金额', String(item.total_price || 0), '例如：128.50'),
+    ]).then(([name, amount]) => {
+      const total_price = Number(String(amount || '0').replace(',', '.'))
+      if (!name || !Number.isFinite(total_price) || total_price < 0) return wx.showToast({ title: '请输入有效名称和金额', icon: 'none' })
+      return api.updateBudget(this.data.id, item.id, { name, total_price }).then(() => this.loadInlineList('budget'))
+    }).catch((error) => wx.showToast({ title: error.errMsg || '保存失败', icon: 'none' }))
   },
   addCollabNote() {
     wx.showModal({ title: '新增协作笔记', editable: true, placeholderText: '记录一个想法或提醒', success: (result) => {

@@ -68,6 +68,8 @@ function updatePacking(tripId, id, payload) { return call(`/api/trips/${tripId}/
 function deletePacking(tripId, id) { return call(`/api/trips/${tripId}/packing/${id}`, 'DELETE') }
 function listBudget(tripId) { return call(`/api/trips/${tripId}/budget`) }
 function createBudget(tripId, payload) { return call(`/api/trips/${tripId}/budget`, 'POST', payload) }
+function updateBudget(tripId, id, payload) { return call(`/api/trips/${tripId}/budget/${id}`, 'PUT', payload) }
+function deleteBudget(tripId, id) { return call(`/api/trips/${tripId}/budget/${id}`, 'DELETE') }
 function listReservations(tripId) { return call(`/api/trips/${tripId}/reservations`) }
 function createReservation(tripId, payload) { return call(`/api/trips/${tripId}/reservations`, 'POST', payload) }
 function updateReservation(tripId, id, payload) { return call(`/api/trips/${tripId}/reservations/${id}`, 'PUT', payload) }
@@ -161,6 +163,8 @@ function listAdminUsers() { return call('/api/admin/users') }
 
 module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, listTrips, copyCollectionPlacesToTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, updatePlace, createAssignment, deleteAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, updateReservation, deleteReservation, listTripFiles, uploadTripFileChunk, toggleTripFileStar, deleteTripFile, listCollabNotes, createCollabNote, deleteCollabNote, listCollabMessages, createCollabMessage, deleteCollabMessage, listCollabPolls, createCollabPoll, voteCollabPoll, closeCollabPoll, deleteCollabPoll, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, updateJourney, getJourneyShareLink, createJourneyShareLink, deleteJourneyShareLink, updateJourneyPreferences, listJourneyEntries, createJourneyEntry, updateJourneyEntry, deleteJourneyEntry, getPhotoThumbnailData, updateJourneyPhoto, deleteJourneyPhoto, uploadJourneyPhotoChunk, uploadJourneyVideoChunk, listCollections, createCollection, getCollection, updateCollection, deleteCollection, saveCollectionPlace, updateCollectionPlace, deleteCollectionPlace, setCollectionPlaceStatus, createCollectionLabel, updateCollectionLabel, deleteCollectionLabel, assignCollectionLabels, unassignCollectionLabels, getCollectionAvailableUsers, inviteCollectionUser, getAtlasStats, getAtlasRegions, getAtlasRegionGeo, getAtlasLocate, getAtlasCountry, markAtlasCountry, unmarkAtlasCountry, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, getVacayPlan, updateVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, updateVacayStats, getVacayAvailableUsers, inviteVacayUser, getVacayShares, getVacayShareUsers, shareVacayCalendar, updateVacayShare, deleteVacayShare, getAdminStats, listAdminUsers }
 module.exports.updateDay = updateDay
+module.exports.updateBudget = updateBudget
+module.exports.deleteBudget = deleteBudget
 module.exports.listJourneyAvailableTrips = listJourneyAvailableTrips
 module.exports.addJourneyTrip = addJourneyTrip
 module.exports.removeJourneyTrip = removeJourneyTrip
