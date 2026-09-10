@@ -23,6 +23,7 @@ Page({
     currencyValue: '—',
     currencyAmount: '100',
     timezoneCards: [],
+    widgetOrder: ['currency', 'collections', 'timezones', 'upcomingReservations'],
     widgetLoading: false,
     tripFilter: 'planned',
     viewMode: 'grid',
@@ -49,7 +50,10 @@ Page({
       const settings = result.settings || {}
       const appearance = settings.appearance || {}
       const mobile = appearance.dashboard?.mobile || {}
-      this.setData({ showCollections: mobile.collections !== false, showUpcoming: mobile.upcomingReservations !== false, showCurrency: mobile.currency !== false, showTimezones: mobile.timezones !== false, currencyFrom: result.settings?.dashboard_fx_from || 'EUR', currencyTo: result.settings?.dashboard_fx_to || 'USD', timezoneCards: this.timezoneCards(result.settings?.dashboard_timezones) })
+      const known = ['currency', 'collections', 'timezones', 'upcomingReservations']
+      const storedOrder = Array.isArray(result.settings?.appearance?.dashboard?.mobileOrder) ? result.settings.appearance.dashboard.mobileOrder : []
+      const widgetOrder = storedOrder.filter((item, index) => known.includes(item) && storedOrder.indexOf(item) === index).concat(known.filter((item) => !storedOrder.includes(item)))
+      this.setData({ showCollections: mobile.collections !== false, showUpcoming: mobile.upcomingReservations !== false, showCurrency: mobile.currency !== false, showTimezones: mobile.timezones !== false, currencyFrom: result.settings?.dashboard_fx_from || 'EUR', currencyTo: result.settings?.dashboard_fx_to || 'USD', timezoneCards: this.timezoneCards(result.settings?.dashboard_timezones), widgetOrder })
     }).catch(() => {})
   },
 
