@@ -10,6 +10,9 @@ Page({
     trips: [],
     visibleTrips: [],
     featuredTrip: null,
+    upcomingReservations: [],
+    collectionsCount: 0,
+    widgetLoading: false,
     tripFilter: 'planned',
     viewMode: 'grid',
     menuOpen: false,
@@ -61,7 +64,15 @@ Page({
       }))
       const visibleTrips = this.filterTrips(trips, this.data.tripFilter)
       this.setData({ trips, visibleTrips, featuredTrip: visibleTrips[0] || null })
+      return this.loadDashboardWidgets(visibleTrips[0])
     })
+  },
+
+  loadDashboardWidgets(trip) {
+    this.setData({ widgetLoading: true })
+    const reservations = trip ? api.listReservations(trip.id).then((data) => (data.reservations || data.items || []).filter((item) => item.start_date || item.date).slice(0, 3)).catch(() => []) : Promise.resolve([])
+    const collections = api.listCollections().then((data) => data.collections || data || []).catch(() => [])
+    return Promise.all([reservations, collections]).then(([upcomingReservations, collectionList]) => this.setData({ upcomingReservations, collectionsCount: Array.isArray(collectionList) ? collectionList.length : 0 })).finally(() => this.setData({ widgetLoading: false }))
   },
 
   filterTrips(trips, filter) {
@@ -99,7 +110,7 @@ Page({
     app.globalData.user = null
     wx.removeStorageSync('trek_token')
     wx.removeStorageSync('trek_user')
-    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, error: '' })
+    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, upcomingReservations: [], collectionsCount: 0, error: '' })
   },
 
   openMap() {
@@ -156,6 +167,10 @@ Page({
 
   openTools() {
     wx.navigateTo({ url: '../tools/tools' })
+  },
+
+  openCollections() {
+    wx.navigateTo({ url: '../collections/collections' })
   },
 
   noop() {},
