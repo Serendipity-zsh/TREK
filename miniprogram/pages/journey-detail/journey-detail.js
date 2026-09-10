@@ -37,6 +37,23 @@ Page({
   showList() { this.setData({ view: 'list' }) },
   showMap() { this.setData({ view: 'map' }) },
   showGallery() { this.setData({ view: 'gallery' }) },
+  openPhotoActions(e) {
+    const photo = this.data.gallery[e.currentTarget.dataset.index]
+    if (!photo || !photo.id) return
+    wx.showActionSheet({ itemList: ['编辑说明', '删除照片'], success: (result) => {
+      if (result.tapIndex === 0) {
+        wx.showModal({ title: '编辑照片说明', editable: true, content: photo.caption || '', placeholderText: '例如：抵达京都的第一天', success: (choice) => {
+          if (!choice.confirm) return
+          api.updateJourneyPhoto(photo.id, { caption: String(choice.content || '').trim() }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
+        } })
+        return
+      }
+      wx.showModal({ title: '删除这张照片？', content: '删除后无法恢复。', success: (choice) => {
+        if (!choice.confirm) return
+        api.deleteJourneyPhoto(photo.id).then(() => { wx.showToast({ title: '已删除', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '删除失败', icon: 'none' }))
+      } })
+    } })
+  },
   updateMarkers(entries) {
     const points = entries.filter((entry) => Number.isFinite(Number(entry.lat || entry.latitude)) && Number.isFinite(Number(entry.lng || entry.longitude)))
     const markers = points.map((entry, index) => ({ id: Number(entry.id || index), latitude: Number(entry.lat || entry.latitude), longitude: Number(entry.lng || entry.longitude), width: 30, height: 30, callout: { content: entry.title || '旅记', display: 'ALWAYS', padding: 6, borderRadius: 8 } }))
