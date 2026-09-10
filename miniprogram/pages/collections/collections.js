@@ -41,6 +41,29 @@ Page({
       api.createCollection({ name: result.content.trim() }).then(() => this.load()).catch((err) => wx.showToast({ title: err.errMsg || '创建失败', icon: 'none' }))
     } })
   },
+  editActiveCollection() {
+    const active = this.data.active
+    if (!active) return
+    wx.showModal({ title: '编辑清单名称', editable: true, content: active.name || active.title || '', placeholderText: '清单名称', success: (result) => {
+      const name = String(result.content || '').trim()
+      if (!result.confirm || !name || name === active.name) return
+      api.updateCollection(active.id, { name }).then(() => { this.load(); this.selectCollection({ currentTarget: { dataset: { id: active.id } } }) }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
+    } })
+  },
+  deleteActiveCollection() {
+    const active = this.data.active
+    if (!active) return
+    wx.showModal({ title: '删除这个清单？', content: '清单中的收藏地点也会被移除。', success: (result) => {
+      if (!result.confirm) return
+      api.deleteCollection(active.id).then(() => { this.setData({ active: null, places: [], visiblePlaces: [], markers: [] }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '删除失败', icon: 'none' }))
+    } })
+  },
+  setPlaceStatus(e) {
+    const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
+    if (!place) return
+    const next = place.status === 'visited' ? 'idea' : (place.status === 'want' ? 'visited' : 'want')
+    api.setCollectionPlaceStatus(place.id, next).then(() => this.selectCollection({ currentTarget: { dataset: { id: this.data.active.id } } })).catch((err) => wx.showToast({ title: err.errMsg || '状态更新失败', icon: 'none' }))
+  },
   openAddPlace() {
     if (!this.data.active) {
       wx.showToast({ title: '请先选择清单', icon: 'none' })
