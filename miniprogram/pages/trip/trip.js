@@ -1,7 +1,7 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0 },
+  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0, collabNotes: [], files: [] },
   onLoad(options) { this.setData({ id: options.id || '', activeTab: options.tab || 'plan' }); this.load() },
   onPullDownRefresh() { this.load().finally(() => wx.stopPullDownRefresh()) },
   load() {
@@ -29,11 +29,20 @@ Page({
     const tab = this.data.activeTab
     if (tab === 'plan' || tab === 'map' || tab === 'lists' || tab === 'costs') return Promise.resolve()
     this.setData({ tabLoading: true })
+    if (tab === 'collab') return api.listCollabNotes(this.data.id).then((result) => this.setData({ collabNotes: result.notes || [] })).catch((error) => this.setData({ error: error.errMsg || '协作记录加载失败' })).finally(() => this.setData({ tabLoading: false }))
+    if (tab === 'files') return api.listTripFiles(this.data.id).then((result) => this.setData({ files: result.files || [] })).catch((error) => this.setData({ error: error.errMsg || '文件列表加载失败' })).finally(() => this.setData({ tabLoading: false }))
     return api.listReservations(this.data.id).then((result) => {
       const items = Array.isArray(result.items) ? result.items : []
       this.setData({ tabItems: items, tabTotal: items.length })
     }).catch((error) => this.setData({ error: error.errMsg || '行程数据加载失败' })).finally(() => this.setData({ tabLoading: false }))
   },
+  addCollabNote() {
+    wx.showModal({ title: '新增协作笔记', editable: true, placeholderText: '记录一个想法或提醒', success: (result) => {
+      if (!result.confirm || !result.content.trim()) return
+      api.createCollabNote(this.data.id, { title: '旅行笔记', content: result.content.trim() }).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '保存失败', icon: 'none' }))
+    } })
+  },
+  removeCollabNote(e) { const note = this.data.collabNotes[e.currentTarget.dataset.index]; if (!note) return; api.deleteCollabNote(this.data.id, note.id).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' })) },
   addDay() { api.createDay(this.data.id).then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '添加日期失败', icon: 'none' })) },
   editTrip() {
     wx.showModal({ title: '编辑行程名称', editable: true, content: this.data.trip?.title || '', success: (result) => {
