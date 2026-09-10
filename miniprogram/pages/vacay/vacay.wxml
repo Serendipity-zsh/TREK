@@ -1,5 +1,5 @@
 <view class="page">
-  <view class="top"><view class="circle" bindtap="previousYear">‹</view><view class="circle">♧</view><view class="year"><text bindtap="previousYear">‹</text><text>{{year}}</text><text bindtap="nextYear">›</text></view><view class="circle" bindtap="toggleView">☷</view></view>
+  <view class="top"><view class="circle" bindtap="openInvite">♧+</view><view class="circle" bindtap="openShares">↗</view><view class="year"><text bindtap="previousYear">‹</text><text>{{year}}</text><text bindtap="nextYear">›</text></view><view class="circle" bindtap="openSettings">☷</view></view>
   <view wx:if="{{error}}" class="error">{{error}}</view>
   <view class="person"><view class="person-avatar">{{userInitial}}</view><view class="person-copy"><text class="person-name">{{plan.name || '我的假期'}}</text><view class="progress"><view style="width:{{stats.percent || 0}}%"></view></view><text class="remaining">{{stats.remaining || 0}} 天剩余</text></view><view class="stepper"><text bindtap="adjustAllowance" data-delta="-1">−</text><text class="allowance">{{stats.vacation_days || stats.total_available || 0}}<small> 天</small></text><text bindtap="adjustAllowance" data-delta="1">＋</text></view></view>
   <view class="legend"><text class="legend-active">● {{plan.user_name || '我'}}</text><text>● 公司假期</text></view>

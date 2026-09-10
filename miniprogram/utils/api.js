@@ -95,10 +95,18 @@ function getAtlasBucketList() { return call('/api/addons/atlas/bucket-list') }
 function createAtlasBucketItem(payload) { return call('/api/addons/atlas/bucket-list', 'POST', payload) }
 function deleteAtlasBucketItem(id) { return call(`/api/addons/atlas/bucket-list/${id}`, 'DELETE') }
 function getVacayPlan() { return call('/api/addons/vacay/plan') }
+function updateVacayPlan(payload) { return call('/api/addons/vacay/plan', 'PUT', payload) }
 function getVacayStats(year) { return call(`/api/addons/vacay/stats/${year}`) }
 function getVacayEntries(year) { return call(`/api/addons/vacay/entries/${year}`) }
 function toggleVacayEntry(payload) { return call('/api/addons/vacay/entries/toggle', 'POST', payload) }
 function toggleCompanyHoliday(payload) { return call('/api/addons/vacay/entries/company-holiday', 'POST', payload) }
 function updateVacayStats(year, payload) { return call(`/api/addons/vacay/stats/${year}`, 'PUT', payload) }
+function getVacayAvailableUsers() { return call('/api/addons/vacay/available-users') }
+function inviteVacayUser(userId) { return call('/api/addons/vacay/invite', 'POST', { user_id: userId }) }
+function getVacayShares() { return call('/api/addons/vacay/shares') }
+function getVacayShareUsers() { return call('/api/addons/vacay/shares/available-users') }
+function shareVacayCalendar(userId) { return call('/api/addons/vacay/shares', 'POST', { user_id: userId }) }
+function updateVacayShare(id, hidden) { return call(`/api/addons/vacay/shares/${id}`, 'PUT', { hidden }) }
+function deleteVacayShare(id) { return call(`/api/addons/vacay/shares/${id}`, 'DELETE') }
 
-module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation, listTripFiles, listCollabNotes, createCollabNote, deleteCollabNote, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, listJourneyEntries, createJourneyEntry, deleteJourneyEntry, listCollections, createCollection, getCollection, updateCollection, deleteCollection, saveCollectionPlace, deleteCollectionPlace, setCollectionPlaceStatus, getAtlasStats, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, getVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, toggleCompanyHoliday, updateVacayStats }
+module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation, listTripFiles, listCollabNotes, createCollabNote, deleteCollabNote, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, listJourneyEntries, createJourneyEntry, deleteJourneyEntry, listCollections, createCollection, getCollection, updateCollection, deleteCollection, saveCollectionPlace, deleteCollectionPlace, setCollectionPlaceStatus, getAtlasStats, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, getVacayPlan, updateVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, toggleCompanyHoliday, updateVacayStats, getVacayAvailableUsers, inviteVacayUser, getVacayShares, getVacayShareUsers, shareVacayCalendar, updateVacayShare, deleteVacayShare }
