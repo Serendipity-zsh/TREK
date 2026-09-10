@@ -1,11 +1,22 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { tripId: '', tab: 'todo', items: [], loading: false, error: '', total: 0 },
+  data: { tripId: '', tab: 'todo', items: [], loading: false, error: '', total: 0, weather: null, weatherPlace: '', weatherTemperature: '' },
   onLoad(options) { this.setData({ tripId: options.tripId || '', tab: options.tab || 'todo' }); this.load() },
   switchTab(event) { this.setData({ tab: event.currentTarget.dataset.tab }); this.load() },
   load() {
     this.setData({ loading: true, error: '' })
+    if (this.data.tab === 'weather') {
+      return api.listPlaces(this.data.tripId).then(({ places }) => {
+        const place = places && places[0]
+        if (!place || place.lat == null || place.lng == null) throw new Error('请先在行程中保存一个有坐标的地点')
+        this.setData({ weatherPlace: place.name })
+        return api.getWeather(place.lat, place.lng)
+      }).then((weather) => {
+        const current = weather.current || weather
+        this.setData({ weather, weatherTemperature: current.temperature_2m ?? current.temperature ?? '--' })
+      }).catch((error) => this.setData({ error: error.errMsg || error.message || '天气加载失败' })).finally(() => this.setData({ loading: false }))
+    }
     const request = this.data.tab === 'todo' ? api.listTodo(this.data.tripId) : this.data.tab === 'packing' ? api.listPacking(this.data.tripId) : this.data.tab === 'budget' ? api.listBudget(this.data.tripId) : api.listReservations(this.data.tripId)
     return request.then((data) => {
       const items = data.items || []
@@ -14,6 +25,7 @@ Page({
     }).catch((error) => this.setData({ error: error.errMsg || '加载失败' })).finally(() => this.setData({ loading: false }))
   },
   addItem() {
+    if (this.data.tab === 'weather') return
     const labels = { todo: '待办事项', packing: '行李物品', budget: '费用名称', reservations: '预订' }
     wx.showModal({ title: `添加${labels[this.data.tab]}`, editable: true, placeholderText: '请输入名称', success: (result) => {
       if (!result.confirm || !result.content.trim()) return
