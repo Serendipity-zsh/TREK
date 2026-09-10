@@ -1,10 +1,14 @@
 <view class="page">
-  <view class="top-bar"><view class="top-icon" bindtap="goHome">‹</view><text class="page-title">设置</text></view>
-  <view class="profile-card"><view class="avatar">D</view><view><text class="profile-name">Demo User</text><text class="profile-email">微信用户</text></view></view>
+  <view class="top-bar"><view class="top-icon" bindtap="goHome">‹</view><text class="page-title">设置</text><view class="top-spacer"></view><text class="top-caption">TREK</text></view>
+  <view class="profile-card"><view class="avatar">{{avatarText}}</view><view><text class="profile-name">{{user.username || '微信用户'}}</text><text class="profile-email">{{user.email || '微信登录'}}</text></view><text class="profile-arrow">›</text></view>
   <view class="section-label">偏好设置</view>
   <view class="setting-row"><view><text class="setting-title">颜色模式</text><text class="setting-copy">在浅色和深色之间切换</text></view><switch checked="{{dark}}" bindchange="toggleTheme" color="#111013" /></view>
+  <view class="setting-row" bindtap="openNotifications"><view><text class="setting-title">通知中心</text><text class="setting-copy">查看和管理 TREK 通知</text></view><text class="setting-arrow">›</text></view>
+  <view class="section-label">地图与旅行</view>
+  <view class="setting-row" bindtap="openMap"><view><text class="setting-title">Atlas 地图</text><text class="setting-copy">搜索地点、收藏和路线规划</text></view><text class="setting-arrow">›</text></view>
+  <view class="setting-row" bindtap="openTools"><view><text class="setting-title">旅行工具</text><text class="setting-copy">Journey、Collections、行李和预算</text></view><text class="setting-arrow">›</text></view>
   <view class="section-label">账号</view>
-  <view class="setting-row"><text class="setting-title">微信登录</text><text class="setting-arrow">›</text></view>
+  <view class="setting-row"><view><text class="setting-title">微信登录</text><text class="setting-copy">当前账号由微信安全身份管理</text></view><text class="setting-state">已连接</text></view>
   <button class="logout" bindtap="logout">退出登录</button>
-  <view class="bottom-nav"><view class="nav-item selected" bindtap="goHome">▦<text>行程</text></view><view class="nav-item">▣<text>日历</text></view><view class="nav-add">＋</view><view class="nav-item">◎<text>探索</text></view><view class="nav-item">•••<text>更多</text></view></view>
+  <view class="bottom-nav"><view class="nav-item selected" bindtap="goHome">▦<text>行程</text></view><view class="nav-item" bindtap="openCalendar">▣<text>日历</text></view><view class="nav-add" bindtap="goHome">＋</view><view class="nav-item" bindtap="openMap">◎<text>探索</text></view><view class="nav-item" bindtap="openTools">•••<text>更多</text></view></view>
 </view>
