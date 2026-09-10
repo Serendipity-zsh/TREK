@@ -12,6 +12,7 @@ Page({
     featuredTrip: null,
     upcomingReservations: [],
     collectionsCount: 0,
+    collectionItems: [],
     widgetLoading: false,
     tripFilter: 'planned',
     viewMode: 'grid',
@@ -70,9 +71,11 @@ Page({
 
   loadDashboardWidgets(trip) {
     this.setData({ widgetLoading: true })
-    const reservations = trip ? api.listReservations(trip.id).then((data) => (data.reservations || data.items || []).filter((item) => item.start_date || item.date).slice(0, 3)).catch(() => []) : Promise.resolve([])
+    const sourceTrips = (this.data.visibleTrips.length ? this.data.visibleTrips : this.data.trips).slice(0, 8)
+    const reservations = Promise.all(sourceTrips.map((item) => api.listReservations(item.id).then((data) => (data.reservations || data.items || []).map((reservation) => ({ ...reservation, trip_id: item.id, trip_title: item.title }))).catch(() => [])))
+      .then((groups) => groups.flat().filter((item) => item.start_date || item.date || item.reservation_time).sort((a, b) => String(a.start_date || a.date || a.reservation_time).localeCompare(String(b.start_date || b.date || b.reservation_time))).slice(0, 6))
     const collections = api.listCollections().then((data) => data.collections || data || []).catch(() => [])
-    return Promise.all([reservations, collections]).then(([upcomingReservations, collectionList]) => this.setData({ upcomingReservations, collectionsCount: Array.isArray(collectionList) ? collectionList.length : 0 })).finally(() => this.setData({ widgetLoading: false }))
+    return Promise.all([reservations, collections]).then(([upcomingReservations, collectionList]) => this.setData({ upcomingReservations, collectionItems: Array.isArray(collectionList) ? collectionList.slice(0, 4) : [], collectionsCount: Array.isArray(collectionList) ? collectionList.length : 0 })).finally(() => this.setData({ widgetLoading: false }))
   },
 
   filterTrips(trips, filter) {
@@ -110,7 +113,7 @@ Page({
     app.globalData.user = null
     wx.removeStorageSync('trek_token')
     wx.removeStorageSync('trek_user')
-    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, upcomingReservations: [], collectionsCount: 0, error: '' })
+    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, upcomingReservations: [], collectionItems: [], collectionsCount: 0, error: '' })
   },
 
   openMap() {
