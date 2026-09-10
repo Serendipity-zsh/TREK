@@ -1,12 +1,12 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', entryDate: '', entryLocation: '', editTitle: '', editSubtitle: '', showTripTracks: false, availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', entryDate: '', entryTime: '', entryLocation: '', mood: '', moodText: '', weather: '', weatherText: '', tags: '', pros: '', cons: '', editTitle: '', editSubtitle: '', showTripTracks: false, availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
     this.setData({ loading: true, error: '' })
     Promise.all([api.getJourney(this.data.id), api.listJourneyEntries(this.data.id)]).then(([journey, entries]) => {
-      const list = entries.entries || entries || []
+      const list = (entries.entries || entries || []).map((entry) => ({ ...entry, moodLabel: this.moodLabel(entry.mood), weatherLabel: this.weatherLabel(entry.weather), tagsText: Array.isArray(entry.tags) ? entry.tags.map((tag) => `#${tag}`).join('  ') : '', prosText: entry.pros_cons?.pros?.filter(Boolean).join('、') || '', consText: entry.pros_cons?.cons?.filter(Boolean).join('、') || '' }))
       const full = journey.journey || journey
       const gallery = (Array.isArray(full.gallery) ? full.gallery : []).map((photo) => ({ ...photo, durationLabel: photo.duration_ms ? `${Math.round(Number(photo.duration_ms) / 1000)} 秒` : '' }))
       this.setData({ journey: full, entries: list, gallery, loading: false })
@@ -64,17 +64,34 @@ Page({
     const first = this.data.entries.find((entry) => entry.lat != null || entry.latitude != null)
     wx.navigateTo({ url: first ? `/pages/map/map?lat=${first.lat || first.latitude}&lng=${first.lng || first.longitude}` : '/pages/map/map' })
   },
-  openCreate() { this.setData({ showCreate: true, title: '', body: '', entryDate: new Date().toISOString().slice(0, 10), entryLocation: '' }) },
+  openCreate() { this.setData({ showCreate: true, title: '', body: '', entryDate: new Date().toISOString().slice(0, 10), entryTime: '', entryLocation: '', mood: '', moodText: '', weather: '', weatherText: '', tags: '', pros: '', cons: '' }) },
   closeCreate() { this.setData({ showCreate: false }) },
   inputTitle(e) { this.setData({ title: e.detail.value }) },
   inputBody(e) { this.setData({ body: e.detail.value }) },
+  changeEntryTime(e) { this.setData({ entryTime: e.detail.value }) },
   inputEntryLocation(e) { this.setData({ entryLocation: e.detail.value }) },
+  inputEntryTags(e) { this.setData({ tags: e.detail.value }) },
+  inputEntryPros(e) { this.setData({ pros: e.detail.value }) },
+  inputEntryCons(e) { this.setData({ cons: e.detail.value }) },
   changeEntryDate(e) { this.setData({ entryDate: e.detail.value }) },
+  chooseMood() {
+    const values = ['amazing', 'good', 'neutral', 'rough']
+    const labels = ['超棒', '不错', '一般', '有点累']
+    wx.showActionSheet({ itemList: labels, success: (result) => this.setData({ mood: values[result.tapIndex], moodText: labels[result.tapIndex] }) })
+  },
+  chooseWeather() {
+    const values = ['sunny', 'partly', 'cloudy', 'rainy', 'stormy', 'cold']
+    const labels = ['晴朗', '多云间晴', '阴天', '下雨', '雷雨', '寒冷']
+    wx.showActionSheet({ itemList: labels, success: (result) => this.setData({ weather: values[result.tapIndex], weatherText: labels[result.tapIndex] }) })
+  },
+  moodLabel(value) { return ({ amazing: '超棒', good: '不错', neutral: '一般', rough: '有点累' })[value] || '' },
+  weatherLabel(value) { return ({ sunny: '晴朗', partly: '多云间晴', cloudy: '阴天', rainy: '下雨', stormy: '雷雨', cold: '寒冷' })[value] || '' },
   submitCreate() {
     const title = (this.data.title || '').trim()
     if (!title) return wx.showToast({ title: '请输入标题', icon: 'none' })
     if (!this.data.entryDate) return wx.showToast({ title: '请选择日期', icon: 'none' })
-    api.createJourneyEntry(this.data.id, { title, story: this.data.body || '', body: this.data.body || '', entry_date: this.data.entryDate, location_name: (this.data.entryLocation || '').trim() || null }).then(() => { this.closeCreate(); this.load() }).catch((err) => wx.showToast({ title: err.message || '保存失败', icon: 'none' }))
+    const splitLines = (value) => String(value || '').split(/[,，\n]/).map((item) => item.trim()).filter(Boolean)
+    api.createJourneyEntry(this.data.id, { title, story: this.data.body || '', body: this.data.body || '', entry_date: this.data.entryDate, entry_time: this.data.entryTime || null, location_name: (this.data.entryLocation || '').trim() || null, mood: this.data.mood || null, weather: this.data.weather || null, tags: splitLines(this.data.tags), pros_cons: { pros: splitLines(this.data.pros), cons: splitLines(this.data.cons) } }).then(() => { this.closeCreate(); this.load() }).catch((err) => wx.showToast({ title: err.message || '保存失败', icon: 'none' }))
   },
   removeEntry(e) {
     const id = e.currentTarget.dataset.id
