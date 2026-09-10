@@ -79,10 +79,14 @@ function listJourneyEntries(id) { return call(`/api/journeys/${id}/entries`) }
 function createJourneyEntry(id, payload) { return call(`/api/journeys/${id}/entries`, 'POST', payload) }
 function deleteJourneyEntry(id) { return call(`/api/journeys/entries/${id}`, 'DELETE') }
 function listCollections() { return call('/api/addons/collections') }
+function createCollection(payload) { return call('/api/addons/collections', 'POST', payload) }
 function getCollection(id) { return call(`/api/addons/collections/${id}`) }
+function deleteCollection(id) { return call(`/api/addons/collections/${id}`, 'DELETE') }
+function deleteCollectionPlace(id) { return call(`/api/addons/collections/places/${id}`, 'DELETE') }
+function setCollectionPlaceStatus(id, status) { return call(`/api/addons/collections/places/${id}/status`, 'POST', { status }) }
 function getAtlasStats() { return call('/api/addons/atlas/stats') }
 function getAtlasBucketList() { return call('/api/addons/atlas/bucket-list') }
 function getVacayPlan() { return call('/api/addons/vacay/plan') }
 function getVacayStats(year) { return call(`/api/addons/vacay/stats/${year}`) }
 
-module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, listJourneyEntries, createJourneyEntry, deleteJourneyEntry, listCollections, getCollection, getAtlasStats, getAtlasBucketList, getVacayPlan, getVacayStats }
+module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, listJourneyEntries, createJourneyEntry, deleteJourneyEntry, listCollections, createCollection, getCollection, deleteCollection, deleteCollectionPlace, setCollectionPlaceStatus, getAtlasStats, getAtlasBucketList, getVacayPlan, getVacayStats }
