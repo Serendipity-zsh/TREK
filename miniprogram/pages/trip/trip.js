@@ -150,6 +150,19 @@ Page({
       if (result.confirm) api.deleteDay(this.data.id, dayId).then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' }))
     } })
   },
+  openDayActions(event) {
+    const day = this.data.days.find((item) => String(item.id) === String(event.currentTarget.dataset.id))
+    if (!day) return
+    wx.showActionSheet({ itemList: ['编辑当天标题和备注', '删除这一天'], success: (result) => {
+      if (result.tapIndex === 1) return this.removeDay({ currentTarget: { dataset: { id: day.id } } })
+      Promise.all([
+        this.askReservationField('当天标题', day.title || '', '例如：抵达京都'),
+        this.askReservationField('当天备注', day.notes || '', '记录当天的提醒或路线'),
+      ]).then(([title, notes]) => api.updateDay(this.data.id, day.id, { title: title || null, notes: notes || '' }))
+        .then(() => { wx.showToast({ title: '已保存', icon: 'success' }); return this.load() })
+        .catch((error) => wx.showToast({ title: error.errMsg || '保存失败', icon: 'none' }))
+    } })
+  },
   selectDay(event) { this.setData({ selectedDayId: String(event.currentTarget.dataset.id) }) },
   openPlacePicker(event) { this.setData({ selectedDayId: String(event.currentTarget.dataset.id), showPlacePicker: true }) },
   closePlacePicker() { this.setData({ showPlacePicker: false }) },
@@ -270,6 +283,15 @@ Page({
   },
   askReservationField(title, content, placeholderText) {
     return new Promise((resolve) => wx.showModal({ title, editable: true, content, placeholderText, success: (result) => resolve(result.confirm ? String(result.content || '').trim() : '') }))
+  },
+  openCreateMenu() {
+    wx.showActionSheet({ itemList: ['添加地点', '添加一天', '添加交通', '添加预订', '打开旅行工具'], success: (result) => {
+      if (result.tapIndex === 0) return this.setData({ showPlacePicker: true })
+      if (result.tapIndex === 1) return this.addDay()
+      if (result.tapIndex === 2) { this.setData({ activeTab: 'transports' }); return this.openReservationEditor(null, true) }
+      if (result.tapIndex === 3) { this.setData({ activeTab: 'bookings' }); return this.openReservationEditor(null, false) }
+      wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=todo` })
+    } })
   },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },
   openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab || 'todo'}` }) },
