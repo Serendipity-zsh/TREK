@@ -32,7 +32,11 @@ Page({
     if (tab === 'collab') return api.listCollabNotes(this.data.id).then((result) => this.setData({ collabNotes: result.notes || [] })).catch((error) => this.setData({ error: error.errMsg || '协作记录加载失败' })).finally(() => this.setData({ tabLoading: false }))
     if (tab === 'files') return api.listTripFiles(this.data.id).then((result) => this.setData({ files: result.files || [] })).catch((error) => this.setData({ error: error.errMsg || '文件列表加载失败' })).finally(() => this.setData({ tabLoading: false }))
     return api.listReservations(this.data.id).then((result) => {
-      const items = Array.isArray(result.items) ? result.items : []
+      const reservations = Array.isArray(result.reservations) ? result.reservations : (Array.isArray(result.items) ? result.items : [])
+      const transportTypes = ['flight', 'train', 'bus', 'car', 'taxi', 'bicycle', 'ferry', 'transport', 'transport_other']
+      const items = tab === 'transports'
+        ? reservations.filter((item) => transportTypes.includes(String(item.type || '').toLowerCase()))
+        : reservations.filter((item) => !transportTypes.includes(String(item.type || '').toLowerCase()))
       this.setData({ tabItems: items, tabTotal: items.length })
     }).catch((error) => this.setData({ error: error.errMsg || '行程数据加载失败' })).finally(() => this.setData({ tabLoading: false }))
   },
@@ -134,6 +138,14 @@ Page({
     wx.showModal({ title: '删除这条记录？', content: '删除后不会影响行程中的地点。', success: (result) => {
       if (!result.confirm) return
       api.deleteReservation(this.data.id, item.id).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' }))
+    } })
+  },
+  addReservation() {
+    const isTransport = this.data.activeTab === 'transports'
+    wx.showModal({ title: isTransport ? '添加交通' : '添加预订', editable: true, placeholderText: isTransport ? '例如：东京到京都 新干线' : '例如：京都酒店', success: (result) => {
+      const title = (result.content || '').trim()
+      if (!result.confirm || !title) return
+      api.createReservation(this.data.id, { title, type: isTransport ? 'train' : 'hotel' }).then(() => this.loadTab()).catch((error) => wx.showToast({ title: error.errMsg || '添加失败', icon: 'none' }))
     } })
   },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },

@@ -17,7 +17,7 @@
     </view>
     </block>
     <block wx:elif="{{activeTab === 'transports' || activeTab === 'bookings'}}">
-      <view wx:if="{{tabLoading}}" class="card empty">正在加载…</view>
+      <view class="section-head"><text>{{activeTab === 'transports' ? '交通' : '预订'}}</text><button bindtap="addReservation">＋ 添加</button></view><view wx:if="{{tabLoading}}" class="card empty">正在加载…</view>
       <view wx:elif="{{!tabItems.length}}" class="card empty">还没有{{activeTab === 'transports' ? '交通' : '预订'}}记录，可在更多工具中添加。</view>
       <view wx:for="{{tabItems}}" wx:key="id" class="record-card"><view class="record-copy"><text class="record-title">{{item.title || item.name || '未命名记录'}}</text><text class="muted">{{item.start_date || item.date || item.type || '已添加到行程'}}</text></view><text class="file-remove" data-index="{{index}}" catchtap="removeReservation">×</text></view>
       <button class="tool-link" bindtap="openTools" data-tab="reservations">打开预订与旅行工具</button>

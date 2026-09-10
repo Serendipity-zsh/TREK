@@ -18,7 +18,7 @@ Page({
     }
     const request = this.data.tab === 'todo' ? api.listTodo(this.data.tripId) : this.data.tab === 'packing' ? api.listPacking(this.data.tripId) : this.data.tab === 'budget' ? api.listBudget(this.data.tripId) : api.listReservations(this.data.tripId)
     return request.then((data) => {
-      const items = data.items || []
+      const items = data.items || data.reservations || []
       const total = this.data.tab === 'budget' ? items.reduce((sum, item) => sum + Number(item.total_price || 0), 0) : 0
       this.setData({ items, total })
     }).catch((error) => this.setData({ error: error.errMsg || '加载失败' })).finally(() => this.setData({ loading: false }))
