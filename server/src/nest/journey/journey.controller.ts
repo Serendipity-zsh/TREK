@@ -491,6 +491,59 @@ export class JourneyController {
     return { photos };
   }
 
+  /** JSON chunk bridge for native mini-program video uploads. */
+  @Post(':id/gallery/video-chunks')
+  async uploadGalleryVideoChunk(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() body: JourneyGalleryChunkDto,
+  ) {
+    const chunkBody = body as unknown as JourneyGalleryChunkRequest & { duration_ms?: unknown };
+    const journeyId = Number(id);
+    const uploadId = String(chunkBody.upload_id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const partIndex = Number(chunkBody.part_index);
+    const totalParts = Number(chunkBody.total_parts);
+    const data = String(chunkBody.data || '');
+    if (!uploadId || !Number.isInteger(partIndex) || !Number.isInteger(totalParts) || partIndex < 0 || totalParts < 1 || totalParts > 8192 || partIndex >= totalParts || !data) {
+      throw new HttpException({ error: 'Invalid upload chunk' }, 400);
+    }
+    const bytes = Buffer.from(data, 'base64');
+    if (!bytes.length || bytes.length > 64 * 1024) throw new HttpException({ error: 'Upload chunk is too large' }, 400);
+    const mime = String(chunkBody.mime_type || '');
+    const filename = String(chunkBody.filename || 'video.mp4');
+    const ext = path.extname(filename).toLowerCase();
+    if (!isVideoMime(mime) || !isVideoExtension(ext)) throw new HttpException({ error: 'Only MP4, M4V, WEBM and MOV videos are allowed' }, 400);
+    const dir = path.join(this.storage.tempDir(), 'wechat-journey', String(user.id), String(journeyId), uploadId);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, `${partIndex}.part`), bytes);
+    const present = Array.from({ length: totalParts }, (_, index) => path.join(dir, `${index}.part`)).every((file) => fs.existsSync(file));
+    if (!present) return { complete: false, received: partIndex + 1, total: totalParts };
+    const assembledPath = path.join(this.storage.tempDir(), `journey-${crypto.randomUUID()}${ext}`);
+    try {
+      const assembled = fs.openSync(assembledPath, 'w');
+      try {
+        let totalBytes = 0;
+        for (let index = 0; index < totalParts; index += 1) {
+          const chunk = fs.readFileSync(path.join(dir, `${index}.part`));
+          totalBytes += chunk.length;
+          if (totalBytes > MAX_VIDEO_SIZE) throw new HttpException({ error: 'Video is too large' }, 400);
+          fs.writeSync(assembled, chunk);
+        }
+      } finally { fs.closeSync(assembled); }
+      await this.storage.put('journey', path.basename(assembledPath), { tmpPath: assembledPath });
+      const durationMs = chunkBody.duration_ms != null ? Number(chunkBody.duration_ms) : null;
+      const photos = this.journey.uploadGalleryPhotos(journeyId, user.id, [{ path: `journey/${path.basename(assembledPath)}`, mediaType: 'video', durationMs: durationMs != null && Number.isFinite(durationMs) ? durationMs : null }]);
+      if (!photos.length) {
+        await this.storage.delete('journey', path.basename(assembledPath)).catch(() => {});
+        throw new HttpException({ error: 'Not allowed' }, 403);
+      }
+      return { complete: true, photos };
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+      try { fs.unlinkSync(assembledPath); } catch { /* storage driver already moved it */ }
+    }
+  }
+
   @Post(':id/gallery/provider-photos')
   galleryProviderPhotos(@CurrentUser() user: User, @Param('id') id: string, @Body() body: JourneyProviderPhotosDto) {
     const pp = body.passphrase && typeof body.passphrase === 'string' ? body.passphrase : undefined;

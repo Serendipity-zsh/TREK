@@ -112,14 +112,15 @@ Page({
   },
   openUpload() {
     if (this.data.uploading) return
-    wx.chooseMedia({ count: 9, mediaType: ['image'], sourceType: ['album', 'camera'], success: async (result) => {
+    wx.chooseMedia({ count: 9, mediaType: ['image', 'video'], sourceType: ['album', 'camera'], success: async (result) => {
       const files = result.tempFiles || []
       if (!files.length) return
-      if (files.some((file) => Number(file.size || 0) > 10 * 1024 * 1024)) return wx.showToast({ title: '单张图片不能超过 10MB', icon: 'none' })
+      const oversized = files.find((file) => Number(file.size || 0) > (file.fileType === 'video' ? 100 : 10) * 1024 * 1024)
+      if (oversized) return wx.showToast({ title: oversized.fileType === 'video' ? '单个视频不能超过 100MB' : '单张图片不能超过 10MB', icon: 'none' })
       this.setData({ uploading: true })
       try {
-        for (const file of files) await this.uploadPhotoFile(file)
-        wx.showToast({ title: '照片已上传', icon: 'success' })
+        for (const file of files) await (file.fileType === 'video' ? this.uploadVideoFile(file) : this.uploadPhotoFile(file))
+        wx.showToast({ title: '媒体已上传', icon: 'success' })
         this.load()
       } catch (error) {
         wx.showToast({ title: error.errMsg || error.message || '上传失败', icon: 'none' })
@@ -139,6 +140,22 @@ Page({
         const position = partIndex * chunkSize
         const data = await readChunk(position, Math.min(chunkSize, Number(file.size || 0) - position))
         await api.uploadJourneyPhotoChunk(this.data.id, { upload_id: uploadId, part_index: partIndex, total_parts: totalParts, filename: file.tempFilePath || 'photo.jpg', mime_type: file.fileType ? `image/${file.fileType}` : 'image/jpeg', data })
+      }
+    })()
+  },
+  uploadVideoFile(file) {
+    const fs = wx.getFileSystemManager()
+    const chunkSize = 48 * 1024
+    const totalParts = Math.max(1, Math.ceil(Number(file.size || 0) / chunkSize))
+    const uploadId = `${Date.now()}_${Math.random().toString(36).slice(2)}`
+    const extension = String(file.tempFilePath || '').split('.').pop().toLowerCase()
+    const ext = ['mp4', 'm4v', 'webm', 'mov'].includes(extension) ? extension : 'mp4'
+    const readChunk = (position, length) => new Promise((resolve, reject) => fs.readFile({ filePath: file.tempFilePath, position, length, encoding: 'base64', success: (res) => resolve(res.data), fail: reject }))
+    return (async () => {
+      for (let partIndex = 0; partIndex < totalParts; partIndex += 1) {
+        const position = partIndex * chunkSize
+        const data = await readChunk(position, Math.min(chunkSize, Number(file.size || 0) - position))
+        await api.uploadJourneyVideoChunk(this.data.id, { upload_id: uploadId, part_index: partIndex, total_parts: totalParts, filename: `journey.${ext}`, mime_type: `video/${ext === 'm4v' ? 'mp4' : ext}`, duration_ms: Number(file.duration || 0) * 1000, data })
       }
     })()
   },
