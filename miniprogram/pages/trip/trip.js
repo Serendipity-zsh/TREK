@@ -170,6 +170,28 @@ Page({
       api.deleteAssignment(this.data.id, day.id, assignment.id).then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '移除失败', icon: 'none' }))
     } })
   },
+  openAssignmentMenu(event) {
+    const dayId = event.currentTarget.dataset.dayId
+    const placeId = event.currentTarget.dataset.placeId
+    const place = this.data.places.find((item) => String(item.id) === String(placeId))
+    const day = this.data.days.find((item) => String(item.id) === String(dayId))
+    const assignment = day?.assignments?.find((item) => String(item.place_id || item.placeId) === String(placeId))
+    if (!place || !assignment) return
+    wx.showActionSheet({ itemList: ['编辑地点', '打开地图', '从当天移除'], success: (result) => {
+      if (result.tapIndex === 0) return this.editPlace(place)
+      if (result.tapIndex === 1) return wx.navigateTo({ url: `/pages/map/map?lat=${place.lat}&lng=${place.lng}` })
+      this.removeAssignment({ currentTarget: { dataset: { dayId, id: assignment.id } } })
+    } })
+  },
+  editPlace(place) {
+    Promise.all([
+      this.askReservationField('地点名称', place.name || '', '例如：清水寺'),
+      this.askReservationField('地址（可选）', place.address || '', '例如：京都市东山区'),
+    ]).then(([name, address]) => {
+      if (!name) return
+      return api.updatePlace(this.data.id, place.id, { name, address: address || null }).then(() => { wx.showToast({ title: '地点已更新', icon: 'success' }); return this.load() })
+    }).catch((error) => wx.showToast({ title: error.errMsg || '地点更新失败', icon: 'none' }))
+  },
   toggleFileStar(event) {
     const file = this.data.files[event.currentTarget.dataset.index]
     if (!file) return

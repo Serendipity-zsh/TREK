@@ -9,10 +9,10 @@
     <view class="toolbar"><button bindtap="openMap">地图</button><button bindtap="addDay">添加一天</button></view>
     <view class="quick-tools"><button bindtap="openTools" data-tab="todo">待办</button><button bindtap="openTools" data-tab="packing">行李</button><button bindtap="openTools" data-tab="budget">预算</button><button bindtap="openTools" data-tab="reservations">预订</button><button bindtap="openTools" data-tab="weather">天气</button></view>
     <view wx:if="{{!days.length}}" class="card empty">还没有日期安排，点击“添加一天”开始规划。</view>
-    <view wx:for="{{days}}" wx:key="id" class="day-card {{selectedDayId == item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectDay">
+      <view wx:for="{{days}}" wx:key="id" class="day-card {{selectedDayId == item.id ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="selectDay">
       <view class="day-head"><view><text class="day-title">第 {{item.day_number}} 天</text><text class="muted">{{item.date || '日期待定'}}</text></view><button class="small-danger" data-id="{{item.id}}" catchtap="removeDay">删除</button></view>
       <view wx:if="{{!item.assignments.length}}" class="day-empty">还没有地点</view>
-      <view wx:for="{{item.assignments}}" wx:for-item="assignment" wx:key="id" class="assignment"><view class="pin"></view><view class="assignment-copy"><text class="assignment-name">{{assignment.place_name}}</text><text class="muted">{{assignment.address || '已加入当天计划'}}</text></view><text class="assignment-remove" data-day-id="{{item.id}}" data-id="{{assignment.id}}" catchtap="removeAssignment">×</text></view>
+      <view wx:for="{{item.assignments}}" wx:for-item="assignment" wx:key="id" class="assignment" data-day-id="{{item.id}}" data-place-id="{{assignment.place_id || assignment.placeId}}" bindtap="openAssignmentMenu"><view class="pin"></view><view class="assignment-copy"><text class="assignment-name">{{assignment.place_name}}</text><text class="muted">{{assignment.address || '已加入当天计划'}}</text></view><text class="assignment-remove" data-day-id="{{item.id}}" data-id="{{assignment.id}}" catchtap="removeAssignment">×</text></view>
       <button class="add-place" data-id="{{item.id}}" catchtap="openPlacePicker">+ 添加地点</button>
     </view>
     </block>
