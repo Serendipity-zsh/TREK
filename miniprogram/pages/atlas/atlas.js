@@ -46,13 +46,13 @@ Page({
   },
   toggleSearch() { this.setData({ searchOpen: !this.data.searchOpen }) },
   input(e) { this.setData({ query: e.detail.value }) },
-  search() { const q = (this.data.query || '').trim(); if (!q) return; this.setData({ loading: true, searchResults: [] }); amapSearch(q).then((data) => { const results = data.suggestions || []; this.setData({ searchResults: results.slice(0, 8) }); if (results[0]?.location) this.selectSearchResult({ currentTarget: { dataset: { index: 0 } } }); }).catch(() => wx.showToast({ title: '搜索失败', icon: 'none' })).finally(() => this.setData({ loading: false })) },
+  search() { const q = (this.data.query || '').trim(); if (!q) return; this.setData({ loading: true, searchResults: [] }); amapSearch(q).then((data) => { const results = Array.isArray(data.suggestions) ? data.suggestions : (Array.isArray(data.pois) ? data.pois : (Array.isArray(data.results) ? data.results : [])); this.setData({ searchResults: results.slice(0, 8) }); }).catch(() => wx.showToast({ title: '搜索失败', icon: 'none' })).finally(() => this.setData({ loading: false })) },
   selectSearchResult(e) {
     const item = this.data.searchResults[e.currentTarget.dataset.index] || e.currentTarget.dataset.item
-    if (!item?.location) return
-    const parts = typeof item.location === 'string' ? item.location.split(',').map(Number) : []
-    const latitude = Number(item.location?.lat ?? item.lat ?? parts[1])
-    const longitude = Number(item.location?.lng ?? item.lng ?? parts[0])
+    const location = item?.location || item?.position || {}
+    const parts = typeof location === 'string' ? location.split(',').map(Number) : []
+    const latitude = Number(location?.lat ?? item?.lat ?? item?.latitude ?? parts[1])
+    const longitude = Number(location?.lng ?? item?.lng ?? item?.longitude ?? parts[0])
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return wx.showToast({ title: '地点坐标不可用', icon: 'none' })
     this.setData({ selectedPlace: item, latitude, longitude, scale: 10, searchResults: [] })
   },
