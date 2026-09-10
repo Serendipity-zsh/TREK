@@ -49,7 +49,7 @@ Page({
       const settings = result.settings || {}
       const appearance = settings.appearance || {}
       const mobile = appearance.dashboard?.mobile || {}
-      this.setData({ showCollections: mobile.collections !== false, showUpcoming: mobile.upcomingReservations !== false, showCurrency: mobile.currency !== false, showTimezones: mobile.timezones !== false, currencyFrom: result.settings?.dashboard_fx_from || 'EUR', currencyTo: result.settings?.dashboard_fx_to || 'USD' })
+      this.setData({ showCollections: mobile.collections !== false, showUpcoming: mobile.upcomingReservations !== false, showCurrency: mobile.currency !== false, showTimezones: mobile.timezones !== false, currencyFrom: result.settings?.dashboard_fx_from || 'EUR', currencyTo: result.settings?.dashboard_fx_to || 'USD', timezoneCards: this.timezoneCards(result.settings?.dashboard_timezones) })
     }).catch(() => {})
   },
 
@@ -104,9 +104,40 @@ Page({
     }).finally(() => this.setData({ widgetLoading: false }))
   },
 
-  timezoneCards() {
+  timezoneCards(zones) {
     const now = new Date()
-    return ['Asia/Shanghai', 'Europe/London', 'Asia/Tokyo'].map((zone) => ({ zone, name: zone.split('/').pop().replace('_', ' '), time: now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: zone }) }))
+    return (zones || ['Asia/Shanghai', 'Europe/London', 'Asia/Tokyo']).map((zone) => ({ zone, name: zone.split('/').pop().replace('_', ' '), time: now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: zone }) }))
+  },
+
+  editCurrency() {
+    wx.showModal({ title: '输入金额', editable: true, content: String(this.data.currencyAmount || '100'), placeholderText: '例如：100', success: (result) => {
+      if (!result.confirm) return
+      const amount = Number(result.content)
+      if (!Number.isFinite(amount)) return wx.showToast({ title: '请输入有效金额', icon: 'none' })
+      this.setData({ currencyAmount: String(amount), currencyValue: this.data.currencyRate ? (amount * this.data.currencyRate).toFixed(2) : '—' })
+    } })
+  },
+
+  editTimezones() {
+    const options = ['Asia/Shanghai', 'Europe/London', 'Asia/Tokyo', 'America/New_York', 'Asia/Singapore']
+    wx.showActionSheet({ itemList: options.map((zone) => zone.split('/').pop().replace('_', ' ')), success: (result) => {
+      const selected = options[result.tapIndex]
+      const current = (this.data.timezoneCards || []).map((item) => item.zone)
+      if (selected && !current.includes(selected)) {
+        const next = current.concat(selected).slice(-4)
+        this.setData({ timezoneCards: this.timezoneCards(next) })
+        api.setSetting('dashboard_timezones', next).catch(() => {})
+      }
+    } })
+  },
+
+  removeTimezone(e) {
+    const zone = e.currentTarget.dataset.zone
+    const current = (this.data.timezoneCards || []).map((item) => item.zone).filter((item) => item !== zone)
+    if (current.length) {
+      this.setData({ timezoneCards: this.timezoneCards(current) })
+      api.setSetting('dashboard_timezones', current).catch(() => {})
+    }
   },
 
   filterTrips(trips, filter) {
