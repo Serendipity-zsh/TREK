@@ -3,7 +3,7 @@
     <view class="welcome-card"><view class="welcome-brand"><text class="welcome-mark">✦</text><text>欢迎来到 trek</text></view><text class="welcome-copy">你可以查看、编辑和创建旅行。所有更改都会在每小时自动重置。</text></view>
     <view class="info-row"><view><text class="info-title">什么是 TREK？</text><text class="info-copy">一个支持实时协作、交互式地图和深色模式的旅行规划器。</text></view></view>
     <text class="feature-label">模块化附加组件</text>
-    <view class="feature-grid"><view class="feature-card" bindtap="openJourney"><text>▣ Journey</text><text>记录旅行、照片和旅程故事</text></view><view class="feature-card" bindtap="openMap"><text>◎ Atlas</text><text>探索地图、搜索地点和规划路线</text></view><view class="feature-card"><text>☷ Packing</text><text>按旅行管理清单</text></view><view class="feature-card" bindtap="openCollections"><text>▤ Collections</text><text>保存和整理想去的地点</text></view><view class="feature-card"><text>▧ Documents</text><text>将文件附加到旅行</text></view><view class="feature-card"><text>⇄ Widgets</text><text>货币换算和时区工具</text></view></view>
+    <view class="feature-grid"><view class="feature-card" bindtap="openJourney"><text>▣ Journey</text><text>记录旅行、照片和旅程故事</text></view><view class="feature-card" bindtap="openMap"><text>◎ Atlas</text><text>探索地图、搜索地点和规划路线</text></view><view class="feature-card" bindtap="openPacking"><text>☷ Packing</text><text>按旅行管理清单</text></view><view class="feature-card" bindtap="openCollections"><text>▤ Collections</text><text>保存和整理想去的地点</text></view><view class="feature-card" bindtap="openDocuments"><text>▧ Documents</text><text>将文件附加到旅行</text></view><view class="feature-card" bindtap="openWidgets"><text>⇄ Widgets</text><text>货币换算和时区工具</text></view></view>
     <button class="settings-entry" bindtap="openSettings">设置</button>
     <bottom-nav active="more" bind:create="goHome" />
   </block>

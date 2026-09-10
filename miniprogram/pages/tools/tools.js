@@ -52,5 +52,20 @@ Page({
   openMap() { wx.navigateTo({ url: '../atlas/atlas' }) },
   openJourney() { wx.navigateTo({ url: '../journey/journey' }) },
   openCollections() { wx.navigateTo({ url: '../collections/collections' }) },
+  openWidgets() { wx.navigateTo({ url: '../settings/settings?tab=appearance' }) },
+  openPacking() { this.chooseTripAndOpen('packing') },
+  openDocuments() { this.chooseTripAndOpen('files') },
+  chooseTripAndOpen(tab) {
+    api.listTrips().then((data) => {
+      const trips = Array.isArray(data?.trips) ? data.trips : (Array.isArray(data) ? data : [])
+      if (!trips.length) return wx.showToast({ title: '请先创建一个行程', icon: 'none' })
+      wx.showActionSheet({ itemList: trips.slice(0, 6).map((trip) => trip.title || `行程 ${trip.id}`), success: (result) => {
+        const trip = trips[result.tapIndex]
+        if (!trip) return
+        if (tab === 'files') return wx.navigateTo({ url: `../trip/trip?id=${encodeURIComponent(trip.id)}&tab=files` })
+        wx.navigateTo({ url: `../tools/tools?tripId=${encodeURIComponent(trip.id)}&tab=${tab}` })
+      } })
+    }).catch((err) => wx.showToast({ title: err.errMsg || '读取行程失败', icon: 'none' }))
+  },
   goHome() { wx.navigateBack({ delta: 1 }) },
 })
