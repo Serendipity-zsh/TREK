@@ -100,6 +100,7 @@ function markAllNotificationsRead() { return call('/api/notifications/in-app/rea
 function deleteAllNotifications() { return call('/api/notifications/in-app/all', 'DELETE') }
 function markNotificationRead(id) { return call(`/api/notifications/in-app/${id}/read`, 'PUT') }
 function deleteNotification(id) { return call(`/api/notifications/in-app/${id}`, 'DELETE') }
+function respondNotification(id, response) { return call(`/api/notifications/in-app/${id}/respond`, 'POST', { response }) }
 function getSettings() { return call('/api/settings') }
 function setSetting(key, value) { return call('/api/settings', 'PUT', { key, value }) }
 function listJourneys() { return call('/api/journeys') }
@@ -192,3 +193,4 @@ module.exports.getAirtrailStatus = getAirtrailStatus
 module.exports.getImmichStatus = getImmichStatus
 module.exports.getSynologyStatus = getSynologyStatus
 module.exports.getAdminAuditLog = getAdminAuditLog
+module.exports.respondNotification = respondNotification
