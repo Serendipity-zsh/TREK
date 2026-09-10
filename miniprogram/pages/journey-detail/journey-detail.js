@@ -8,7 +8,12 @@ Page({
     Promise.all([api.getJourney(this.data.id), api.listJourneyEntries(this.data.id)]).then(([journey, entries]) => {
       const list = entries.entries || entries || []
       const full = journey.journey || journey
-      this.setData({ journey: full, entries: list, gallery: Array.isArray(full.gallery) ? full.gallery : [], loading: false })
+      const gallery = Array.isArray(full.gallery) ? full.gallery : []
+      this.setData({ journey: full, entries: list, gallery, loading: false })
+      Promise.all(gallery.map((photo) => {
+        if (photo.media_type === 'video' || !photo.photo_id) return Promise.resolve(photo)
+        return api.getPhotoThumbnailData(photo.photo_id).then((data) => ({ ...photo, photo_url: data.data_url })).catch(() => photo)
+      })).then((withImages) => this.setData({ gallery: withImages }))
       this.updateMarkers(list)
     }).catch((err) => this.setData({ loading: false, error: err.message || '旅记加载失败' }))
   },

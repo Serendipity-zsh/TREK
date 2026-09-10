@@ -26,4 +26,8 @@ export class PhotosService {
   info(userId: number, photoId: number) {
     return this.resolver.getPhotoInfo(userId, photoId);
   }
+
+  thumbnailData(userId: number, photoId: number) {
+    return this.resolver.thumbnailData(userId, photoId);
+  }
 }

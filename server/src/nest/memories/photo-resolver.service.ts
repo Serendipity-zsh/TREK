@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
+import type { Readable } from 'node:stream';
 import type { TrekPhoto } from '../../types';
 import { decrypt_api_key } from '../common/crypto/apiKeyCrypto';
 import { TrekPhotosRepository } from '../photos/trek-photos.repository';
@@ -9,6 +10,8 @@ import { fail, success, type AssetInfo, type ServiceResult } from './memories.he
 import { PhotoProviderRegistry } from './photo-provider.registry';
 import type { PhotoAssetRef } from './photo-provider';
 import { StorageService } from '../storage/storage.service';
+import { contentTypeFor } from '../storage/content-type';
+import type { PhotoBytes } from './photo-provider';
 
 /**
  * Resolves a stored trek_photo to bytes or metadata by asking whichever provider
@@ -146,6 +149,62 @@ export class PhotoResolverService {
       return;
     }
     await provider.streamAsset(res, { ...ref, range }, kind);
+  }
+
+  /**
+   * Native mini-program clients cannot use the browser's cookie-backed image
+   * loading path. Return a bounded thumbnail as a data URL instead, while
+   * keeping the same trek-photo access check in the controller.
+   */
+  async thumbnailData(userId: number, photoId: number): Promise<PhotoBytes | { error: string; status: number }> {
+    const photo = this.photos.resolve(photoId);
+    if (!photo) return { error: 'Photo not found', status: 404 };
+
+    if (photo.file_path) {
+      let thumbRel = photo.thumbnail_path ?? null;
+      if (!thumbRel && photo.media_type !== 'video') {
+        const result = await this.thumbnails.ensureLocalThumbnail(photo.file_path);
+        if (result) {
+          thumbRel = result.thumbnailRelPath;
+          this.photos.recordLocalThumbnail(photo.id, thumbRel, result.width, result.height);
+        }
+      }
+      const rel = thumbRel || (photo.media_type === 'video' ? null : photo.file_path);
+      const name = rel ? this.storageName(rel) : null;
+      if (name && await this.storage.exists('journey', name).catch(() => false)) {
+        const { stream } = await this.storage.getStream('journey', name);
+        const bytes = await this.readBounded(stream);
+        return { bytes, contentType: contentTypeFor(name) || 'image/jpeg' };
+      }
+      if (photo.provider === 'local') return { error: 'File not found', status: 404 };
+    }
+
+    if (photo.provider === 'local') return { error: 'File not found', status: 404 };
+    const provider = this.providers.get(photo.provider);
+    if (!provider) return { error: `Unknown provider: ${photo.provider}`, status: 400 };
+    const result = await provider.fetchThumbnailBytes(this.refFor(photo, userId));
+    if ('error' in result) return result;
+    return { bytes: this.boundBytes(result.bytes), contentType: result.contentType };
+  }
+
+  private async readBounded(stream: Readable): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const chunk of stream as AsyncIterable<Buffer | string>) {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      size += buffer.length;
+      if (size > 4 * 1024 * 1024) {
+        stream.destroy();
+        throw new Error('Photo thumbnail is too large');
+      }
+      chunks.push(buffer);
+    }
+    return Buffer.concat(chunks);
+  }
+
+  private boundBytes(bytes: Buffer): Buffer {
+    if (bytes.length > 4 * 1024 * 1024) throw new Error('Photo thumbnail is too large');
+    return bytes;
   }
 
   /**

@@ -52,4 +52,15 @@ export class PhotosController {
     }
     res.json(result.data);
   }
+
+  @Get(':id/thumbnail-data')
+  async thumbnailData(@CurrentUser() user: User, @Param('id') id: string) {
+    const photoId = this.requireAccess(user, id);
+    const result = await this.photos.thumbnailData(user.id, photoId);
+    if ('error' in result) throw new HttpException({ error: result.error }, result.status);
+    return {
+      data_url: `data:${result.contentType};base64,${result.bytes.toString('base64')}`,
+      content_type: result.contentType,
+    };
+  }
 }
