@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', entryDate: '', entryTime: '', entryLocation: '', mood: '', moodText: '', weather: '', weatherText: '', tags: '', pros: '', cons: '', editTitle: '', editSubtitle: '', showTripTracks: false, availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showEditEntry: false, editEntryId: '', showSettings: false, title: '', body: '', entryDate: '', entryTime: '', entryLocation: '', mood: '', moodText: '', weather: '', weatherText: '', tags: '', pros: '', cons: '', editTitle: '', editSubtitle: '', editEntryTitle: '', editEntryBody: '', editEntryDate: '', editEntryTime: '', editEntryLocation: '', editEntryMood: '', editEntryMoodText: '', editEntryWeather: '', editEntryWeatherText: '', editEntryTags: '', editEntryPros: '', editEntryCons: '', showTripTracks: false, availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
@@ -26,13 +26,9 @@ Page({
   },
   editEntry(entry) {
     if (!entry) return
-    wx.showModal({ title: '编辑记录标题', editable: true, content: entry.title || '', success: (titleResult) => {
-      if (!titleResult.confirm || !String(titleResult.content || '').trim()) return
-      wx.showModal({ title: '编辑记录正文', editable: true, content: entry.body || '', success: (bodyResult) => {
-        if (!bodyResult.confirm) return
-        api.updateJourneyEntry(entry.id, { title: String(titleResult.content).trim(), story: bodyResult.content || '', body: bodyResult.content || '' }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
-      } })
-    } })
+    const moodText = this.moodLabel(entry.mood)
+    const weatherText = this.weatherLabel(entry.weather)
+    this.setData({ showEditEntry: true, editEntryId: entry.id, editEntryTitle: entry.title || '', editEntryBody: entry.story || entry.body || '', editEntryDate: entry.entry_date || entry.date || '', editEntryTime: entry.entry_time || '', editEntryLocation: entry.location_name || entry.place_name || '', editEntryMood: entry.mood || '', editEntryMoodText: moodText, editEntryWeather: entry.weather || '', editEntryWeatherText: weatherText, editEntryTags: Array.isArray(entry.tags) ? entry.tags.join('，') : '', editEntryPros: entry.pros_cons?.pros?.join('，') || '', editEntryCons: entry.pros_cons?.cons?.join('，') || '' })
   },
   showList() { this.setData({ view: 'list' }) },
   showMap() { this.setData({ view: 'map' }) },
@@ -66,6 +62,7 @@ Page({
   },
   openCreate() { this.setData({ showCreate: true, title: '', body: '', entryDate: new Date().toISOString().slice(0, 10), entryTime: '', entryLocation: '', mood: '', moodText: '', weather: '', weatherText: '', tags: '', pros: '', cons: '' }) },
   closeCreate() { this.setData({ showCreate: false }) },
+  closeEditEntry() { this.setData({ showEditEntry: false }) },
   inputTitle(e) { this.setData({ title: e.detail.value }) },
   inputBody(e) { this.setData({ body: e.detail.value }) },
   changeEntryTime(e) { this.setData({ entryTime: e.detail.value }) },
@@ -73,7 +70,15 @@ Page({
   inputEntryTags(e) { this.setData({ tags: e.detail.value }) },
   inputEntryPros(e) { this.setData({ pros: e.detail.value }) },
   inputEntryCons(e) { this.setData({ cons: e.detail.value }) },
+  inputEditEntryTitle(e) { this.setData({ editEntryTitle: e.detail.value }) },
+  inputEditEntryBody(e) { this.setData({ editEntryBody: e.detail.value }) },
+  inputEditEntryLocation(e) { this.setData({ editEntryLocation: e.detail.value }) },
+  inputEditEntryTags(e) { this.setData({ editEntryTags: e.detail.value }) },
+  inputEditEntryPros(e) { this.setData({ editEntryPros: e.detail.value }) },
+  inputEditEntryCons(e) { this.setData({ editEntryCons: e.detail.value }) },
   changeEntryDate(e) { this.setData({ entryDate: e.detail.value }) },
+  changeEditEntryDate(e) { this.setData({ editEntryDate: e.detail.value }) },
+  changeEditEntryTime(e) { this.setData({ editEntryTime: e.detail.value }) },
   chooseMood() {
     const values = ['amazing', 'good', 'neutral', 'rough']
     const labels = ['超棒', '不错', '一般', '有点累']
@@ -84,6 +89,16 @@ Page({
     const labels = ['晴朗', '多云间晴', '阴天', '下雨', '雷雨', '寒冷']
     wx.showActionSheet({ itemList: labels, success: (result) => this.setData({ weather: values[result.tapIndex], weatherText: labels[result.tapIndex] }) })
   },
+  chooseEditMood() {
+    const values = ['amazing', 'good', 'neutral', 'rough']
+    const labels = ['超棒', '不错', '一般', '有点累']
+    wx.showActionSheet({ itemList: labels, success: (result) => this.setData({ editEntryMood: values[result.tapIndex], editEntryMoodText: labels[result.tapIndex] }) })
+  },
+  chooseEditWeather() {
+    const values = ['sunny', 'partly', 'cloudy', 'rainy', 'stormy', 'cold']
+    const labels = ['晴朗', '多云间晴', '阴天', '下雨', '雷雨', '寒冷']
+    wx.showActionSheet({ itemList: labels, success: (result) => this.setData({ editEntryWeather: values[result.tapIndex], editEntryWeatherText: labels[result.tapIndex] }) })
+  },
   moodLabel(value) { return ({ amazing: '超棒', good: '不错', neutral: '一般', rough: '有点累' })[value] || '' },
   weatherLabel(value) { return ({ sunny: '晴朗', partly: '多云间晴', cloudy: '阴天', rainy: '下雨', stormy: '雷雨', cold: '寒冷' })[value] || '' },
   submitCreate() {
@@ -92,6 +107,13 @@ Page({
     if (!this.data.entryDate) return wx.showToast({ title: '请选择日期', icon: 'none' })
     const splitLines = (value) => String(value || '').split(/[,，\n]/).map((item) => item.trim()).filter(Boolean)
     api.createJourneyEntry(this.data.id, { title, story: this.data.body || '', body: this.data.body || '', entry_date: this.data.entryDate, entry_time: this.data.entryTime || null, location_name: (this.data.entryLocation || '').trim() || null, mood: this.data.mood || null, weather: this.data.weather || null, tags: splitLines(this.data.tags), pros_cons: { pros: splitLines(this.data.pros), cons: splitLines(this.data.cons) } }).then(() => { this.closeCreate(); this.load() }).catch((err) => wx.showToast({ title: err.message || '保存失败', icon: 'none' }))
+  },
+  submitEditEntry() {
+    const title = String(this.data.editEntryTitle || '').trim()
+    if (!title) return wx.showToast({ title: '请输入标题', icon: 'none' })
+    if (!this.data.editEntryDate) return wx.showToast({ title: '请选择日期', icon: 'none' })
+    const splitLines = (value) => String(value || '').split(/[,，\n]/).map((item) => item.trim()).filter(Boolean)
+    api.updateJourneyEntry(this.data.editEntryId, { title, story: this.data.editEntryBody || '', body: this.data.editEntryBody || '', entry_date: this.data.editEntryDate, entry_time: this.data.editEntryTime || null, location_name: String(this.data.editEntryLocation || '').trim() || null, mood: this.data.editEntryMood || null, weather: this.data.editEntryWeather || null, tags: splitLines(this.data.editEntryTags), pros_cons: { pros: splitLines(this.data.editEntryPros), cons: splitLines(this.data.editEntryCons) } }).then(() => { this.closeEditEntry(); wx.showToast({ title: '已保存', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
   },
   removeEntry(e) {
     const id = e.currentTarget.dataset.id
