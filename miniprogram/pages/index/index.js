@@ -15,6 +15,14 @@ Page({
     collectionItems: [],
     showCollections: true,
     showUpcoming: true,
+    showCurrency: true,
+    showTimezones: true,
+    currencyFrom: 'EUR',
+    currencyTo: 'USD',
+    currencyRate: null,
+    currencyValue: '—',
+    currencyAmount: '100',
+    timezoneCards: [],
     widgetLoading: false,
     tripFilter: 'planned',
     viewMode: 'grid',
@@ -41,7 +49,7 @@ Page({
       const settings = result.settings || {}
       const appearance = settings.appearance || {}
       const mobile = appearance.dashboard?.mobile || {}
-      this.setData({ showCollections: mobile.collections !== false, showUpcoming: mobile.upcomingReservations !== false })
+      this.setData({ showCollections: mobile.collections !== false, showUpcoming: mobile.upcomingReservations !== false, showCurrency: mobile.currency !== false, showTimezones: mobile.timezones !== false, currencyFrom: result.settings?.dashboard_fx_from || 'EUR', currencyTo: result.settings?.dashboard_fx_to || 'USD' })
     }).catch(() => {})
   },
 
@@ -88,7 +96,17 @@ Page({
     const reservations = Promise.all(sourceTrips.map((item) => api.listReservations(item.id).then((data) => (data.reservations || data.items || []).map((reservation) => ({ ...reservation, trip_id: item.id, trip_title: item.title }))).catch(() => [])))
       .then((groups) => groups.flat().filter((item) => item.start_date || item.date || item.reservation_time).sort((a, b) => String(a.start_date || a.date || a.reservation_time).localeCompare(String(b.start_date || b.date || b.reservation_time))).slice(0, 6))
     const collections = api.listCollections().then((data) => data.collections || data || []).catch(() => [])
-    return Promise.all([reservations, collections]).then(([upcomingReservations, collectionList]) => this.setData({ upcomingReservations, collectionItems: Array.isArray(collectionList) ? collectionList.slice(0, 4) : [], collectionsCount: Array.isArray(collectionList) ? collectionList.length : 0 })).finally(() => this.setData({ widgetLoading: false }))
+    const rates = api.getRates(this.data.currencyFrom).catch(() => ({ rates: null }))
+    return Promise.all([reservations, collections, rates]).then(([upcomingReservations, collectionList, rateData]) => {
+      const ratesMap = rateData && rateData.rates
+      const currencyRate = ratesMap && ratesMap[this.data.currencyTo] ? Number(ratesMap[this.data.currencyTo]) : null
+      this.setData({ upcomingReservations, collectionItems: Array.isArray(collectionList) ? collectionList.slice(0, 4) : [], collectionsCount: Array.isArray(collectionList) ? collectionList.length : 0, currencyRate, currencyValue: currencyRate ? (Number(this.data.currencyAmount) * currencyRate).toFixed(2) : '—', timezoneCards: this.timezoneCards() })
+    }).finally(() => this.setData({ widgetLoading: false }))
+  },
+
+  timezoneCards() {
+    const now = new Date()
+    return ['Asia/Shanghai', 'Europe/London', 'Asia/Tokyo'].map((zone) => ({ zone, name: zone.split('/').pop().replace('_', ' '), time: now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: zone }) }))
   },
 
   filterTrips(trips, filter) {
@@ -126,7 +144,7 @@ Page({
     app.globalData.user = null
     wx.removeStorageSync('trek_token')
     wx.removeStorageSync('trek_user')
-    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, upcomingReservations: [], collectionItems: [], collectionsCount: 0, showCollections: true, showUpcoming: true, error: '' })
+    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, upcomingReservations: [], collectionItems: [], collectionsCount: 0, showCollections: true, showUpcoming: true, showCurrency: true, showTimezones: true, error: '' })
   },
 
   openMap() {

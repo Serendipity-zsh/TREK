@@ -4,6 +4,7 @@ import { BudgetService } from './budget.service';
 import { BudgetMcp } from './budget.mcp';
 import { ExchangeRatesService } from './exchange-rates.service';
 import { ExchangeRatesRpc } from './exchange-rates.rpc';
+import { ExchangeRatesController } from './exchange-rates.controller';
 import { CostsRpc } from './costs.rpc';
 import { PluginGuardsModule } from '../plugins/host/plugin-guards.module';
 import { RealtimeModule } from '../realtime/realtime.module';
@@ -22,7 +23,7 @@ import { McpSharedModule } from '../mcp-shared/mcp-shared.module';
  *  partial e2e TestingModules resolving RuntimeEnvService. */
 @Module({
   imports: [McpSharedModule, PermissionsModule, AppConfigModule, RealtimeModule, PluginGuardsModule, AddonsModule, TripMembershipModule],
-  controllers: [BudgetController],
+  controllers: [BudgetController, ExchangeRatesController],
   providers: [BudgetService, ExchangeRatesService, BudgetMcp, ExchangeRatesRpc, CostsRpc],
   // For in-container consumers (CostsRpc, TripsService,
   // ReservationsService, BookingImportService).

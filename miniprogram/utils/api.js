@@ -90,6 +90,7 @@ function voteCollabPoll(tripId, id, optionIndex) { return call(`/api/trips/${tri
 function closeCollabPoll(tripId, id) { return call(`/api/trips/${tripId}/collab/polls/${id}/close`, 'PUT') }
 function deleteCollabPoll(tripId, id) { return call(`/api/trips/${tripId}/collab/polls/${id}`, 'DELETE') }
 function getWeather(lat, lng, date) { return call(`/api/weather?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}${date ? `&date=${encodeURIComponent(date)}` : ''}&lang=zh`) }
+function getRates(base) { return call(`/api/rates?base=${encodeURIComponent(base || 'EUR')}`) }
 function listNotifications(unreadOnly, offset) {
   const params = [`limit=50`, `offset=${Number(offset) || 0}`]
   if (unreadOnly) params.push('unread_only=true')
@@ -170,6 +171,7 @@ function listAdminUsers() { return call('/api/admin/users') }
 module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, listTrips, copyCollectionPlacesToTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, updatePlace, createAssignment, deleteAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, updateReservation, deleteReservation, listTripFiles, uploadTripFileChunk, toggleTripFileStar, deleteTripFile, listCollabNotes, createCollabNote, deleteCollabNote, listCollabMessages, createCollabMessage, deleteCollabMessage, listCollabPolls, createCollabPoll, voteCollabPoll, closeCollabPoll, deleteCollabPoll, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, updateJourney, getJourneyShareLink, createJourneyShareLink, deleteJourneyShareLink, updateJourneyPreferences, listJourneyEntries, createJourneyEntry, updateJourneyEntry, deleteJourneyEntry, getPhotoThumbnailData, updateJourneyPhoto, deleteJourneyPhoto, uploadJourneyPhotoChunk, uploadJourneyVideoChunk, listCollections, createCollection, getCollection, updateCollection, deleteCollection, saveCollectionPlace, updateCollectionPlace, deleteCollectionPlace, setCollectionPlaceStatus, createCollectionLabel, updateCollectionLabel, deleteCollectionLabel, assignCollectionLabels, unassignCollectionLabels, getCollectionAvailableUsers, inviteCollectionUser, getAtlasStats, getAtlasRegions, getAtlasRegionGeo, getAtlasLocate, getAtlasCountry, markAtlasCountry, unmarkAtlasCountry, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, getVacayPlan, updateVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, updateVacayStats, getVacayAvailableUsers, inviteVacayUser, getVacayShares, getVacayShareUsers, shareVacayCalendar, updateVacayShare, deleteVacayShare, getAdminStats, listAdminUsers }
 module.exports.getSettings = getSettings
 module.exports.setSetting = setSetting
+module.exports.getRates = getRates
 module.exports.updateDay = updateDay
 module.exports.updateBudget = updateBudget
 module.exports.deleteBudget = deleteBudget
