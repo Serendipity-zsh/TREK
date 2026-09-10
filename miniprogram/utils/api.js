@@ -184,7 +184,7 @@ function getAdminFeatureFlags() {
     ['placesEnrich', '/api/admin/places-enrich'],
     ['collab', '/api/admin/collab-features'],
   ].map(([key, path]) => call(path).then((value) => [key, value])))
-    .then((entries) => Object.fromEntries(entries))
+    .then((entries) => entries.reduce((result, entry) => { result[entry[0]] = entry[1]; return result }, {}))
 }
 function updateAdminFeature(name, enabled) {
   const paths = { bagTracking: '/api/admin/bag-tracking', placesPhotos: '/api/admin/places-photos', placesAutocomplete: '/api/admin/places-autocomplete', placesDetails: '/api/admin/places-details', placesEnrich: '/api/admin/places-enrich' }
