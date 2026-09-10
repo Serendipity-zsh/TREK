@@ -97,6 +97,7 @@ function listJourneys() { return call('/api/journeys') }
 function createJourney(payload) { return call('/api/journeys', 'POST', payload) }
 function listJourneyAvailableTrips() { return call('/api/journeys/available-trips') }
 function addJourneyTrip(id, tripId) { return call(`/api/journeys/${id}/trips`, 'POST', { trip_id: Number(tripId) }) }
+function removeJourneyTrip(id, tripId) { return call(`/api/journeys/${id}/trips/${tripId}`, 'DELETE') }
 function getJourney(id) { return call(`/api/journeys/${id}`) }
 function updateJourney(id, payload) { return call(`/api/journeys/${id}`, 'PATCH', payload) }
 function getJourneyShareLink(id) { return call(`/api/journeys/${id}/share-link`) }
@@ -162,3 +163,4 @@ module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, g
 module.exports.updateDay = updateDay
 module.exports.listJourneyAvailableTrips = listJourneyAvailableTrips
 module.exports.addJourneyTrip = addJourneyTrip
+module.exports.removeJourneyTrip = removeJourneyTrip
