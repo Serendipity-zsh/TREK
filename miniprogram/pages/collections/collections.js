@@ -96,6 +96,22 @@ Page({
       api.deleteCollection(active.id).then(() => { this.setData({ active: null, places: [], visiblePlaces: [], markers: [] }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '删除失败', icon: 'none' }))
     } })
   },
+  shareActiveCollection() {
+    const active = this.data.active
+    if (!active) return
+    api.getCollectionAvailableUsers(active.id).then((data) => {
+      const users = Array.isArray(data.users) ? data.users : []
+      if (!users.length) return wx.showToast({ title: '暂无可邀请的用户', icon: 'none' })
+      wx.showActionSheet({ itemList: users.slice(0, 6).map((user) => user.username || user.email || `用户 ${user.id}`), success: (result) => {
+        const user = users[result.tapIndex]
+        if (!user) return
+        wx.showModal({ title: '邀请协作', content: '以只读成员身份加入这个清单？', success: (choice) => {
+          if (!choice.confirm) return
+          api.inviteCollectionUser(active.id, user.id).then(() => wx.showToast({ title: '邀请已发送', icon: 'success' })).catch((err) => wx.showToast({ title: err.errMsg || '邀请失败', icon: 'none' }))
+        } })
+      } })
+    }).catch((err) => wx.showToast({ title: err.errMsg || '读取成员失败', icon: 'none' }))
+  },
   setPlaceStatus(e) {
     const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
     if (!place) return
