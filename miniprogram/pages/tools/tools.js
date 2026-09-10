@@ -49,7 +49,7 @@ Page({
     } })
   },
   openSettings() { wx.navigateTo({ url: '../settings/settings' }) },
-  openMap() { wx.navigateTo({ url: '../map/map' }) },
+  openMap() { wx.navigateTo({ url: '../atlas/atlas' }) },
   openJourney() { wx.navigateTo({ url: '../journey/journey' }) },
   openCollections() { wx.navigateTo({ url: '../collections/collections' }) },
   goHome() { wx.navigateBack({ delta: 1 }) },

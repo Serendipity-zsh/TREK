@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/index/index", "pages/calendar/calendar", "pages/map/map", "pages/trip/trip", "pages/tools/tools", "pages/settings/settings", "pages/notifications/notifications", "pages/journey/journey", "pages/collections/collections"],
+  "pages": ["pages/index/index", "pages/vacay/vacay", "pages/atlas/atlas", "pages/calendar/calendar", "pages/map/map", "pages/trip/trip", "pages/tools/tools", "pages/settings/settings", "pages/notifications/notifications", "pages/journey/journey", "pages/journey-detail/journey-detail", "pages/collections/collections", "pages/collection-detail/collection-detail", "pages/admin/admin"],
   "window": {
     "navigationBarTitleText": "TREK",
     "navigationBarBackgroundColor": "#ffffff",

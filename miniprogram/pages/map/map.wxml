@@ -6,7 +6,7 @@
     <button class="search-button" loading="{{loading}}" bindtap="search">搜索</button>
   </view>
   <text wx:if="{{error}}" class="error">{{error}}</text>
-  <map class="map" latitude="{{latitude}}" longitude="{{longitude}}" scale="12" markers="{{markers}}" polyline="{{polyline}}" show-location enable-zoom enable-scroll></map>
+  <map class="map" latitude="{{latitude}}" longitude="{{longitude}}" scale="{{scale}}" markers="{{markers}}" polyline="{{polyline}}" show-location enable-zoom enable-scroll></map>
   <view class="route-row"><button class="route-button" loading="{{loading}}" bindtap="planRoute">规划搜索结果路线</button><text wx:if="{{routeSummary}}" class="route-summary">{{routeSummary}}</text></view>
   <view wx:for="{{results}}" wx:key="id" data-index="{{index}}" bindtap="chooseResult" class="result">
     <view class="result-copy"><text class="name">{{item.name}}</text><text class="address">{{item.address}}</text></view>

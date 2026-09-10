@@ -11,7 +11,7 @@ Page({
   },
   selectCollection(e) {
     const id = e.currentTarget.dataset.id
-    getCollection(id).then((data) => this.setData({ active: data.collection || data, places: data.places || data.collection?.places || [] })).catch(() => wx.showToast({ title: '收藏详情加载失败', icon: 'none' }))
+    wx.navigateTo({ url: `/pages/collection-detail/collection-detail?id=${id}` })
   },
   toggleView() { this.setData({ view: this.data.view === 'list' ? 'map' : 'list' }) },
   openMap() { wx.navigateTo({ url: '/pages/map/map' }) },

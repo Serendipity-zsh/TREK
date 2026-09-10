@@ -10,13 +10,14 @@ Page({
     results: [],
     latitude: 39.9042,
     longitude: 116.4074,
+    scale: 12,
     markers: [],
     polyline: [],
     routeSummary: '',
   },
 
   onLoad(options) {
-    this.setData({ tripId: options.tripId || '', dayId: options.dayId || '' })
+    this.setData({ tripId: options.tripId || '', dayId: options.dayId || '', ...(options.lat && options.lng ? { latitude: Number(options.lat), longitude: Number(options.lng), scale: 14 } : {}) })
   },
   goHome() { wx.navigateBack({ delta: 1 }) },
   openCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },

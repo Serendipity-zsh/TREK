@@ -83,7 +83,7 @@ Page({
   },
 
   toggleUserMenu() { this.setData({ menuOpen: !this.data.menuOpen }) },
-  openCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
+  openCalendar() { wx.navigateTo({ url: '../vacay/vacay' }) },
   openSettings() { wx.navigateTo({ url: '../settings/settings' }) },
   openNotifications() { wx.navigateTo({ url: '../notifications/notifications' }) },
   dismissWelcome() { wx.setStorageSync('trek_welcome_seen', true); this.setData({ welcomeOpen: false }) },
@@ -98,7 +98,7 @@ Page({
   },
 
   openMap() {
-    wx.navigateTo({ url: '../map/map' })
+    wx.navigateTo({ url: '../atlas/atlas' })
   },
 
   openTrip(event) {
