@@ -1,13 +1,15 @@
 .page { min-height: 100vh; box-sizing: border-box; }
 .login-shell { min-height: 100vh; background: #f7f8fa; }
-.login-hero { position: relative; min-height: 390rpx; overflow: hidden; background: #f7f8fa; }
-.hero-content { position: absolute; top: 82rpx; right: 56rpx; left: 56rpx; color: #101013; text-align: center; }
+.login-hero { position: relative; min-height: 470rpx; overflow: hidden; background: radial-gradient(circle at 28% 28%, rgba(56,55,142,.72), transparent 35%), radial-gradient(circle at 74% 78%, rgba(27,74,100,.48), transparent 40%), #070d20; }
+.login-hero::before { position:absolute; inset:0; content:''; opacity:.48; background-image:radial-gradient(circle, rgba(155,168,235,.72) 1.5rpx, transparent 2rpx); background-size:18rpx 18rpx; mask-image:linear-gradient(135deg, transparent 0%, #000 22%, #000 72%, transparent 100%); }
+.login-hero::after { position:absolute; right:-120rpx; bottom:-150rpx; left:-120rpx; height:340rpx; content:''; border-top:2rpx solid rgba(132,120,255,.42); border-radius:50%; transform:rotate(-12deg); box-shadow:0 -62rpx 0 rgba(132,120,255,.18),0 -126rpx 0 rgba(132,120,255,.12); }
+.hero-content { position: absolute; top: 96rpx; right: 56rpx; left: 56rpx; z-index:1; color: #fff; text-align: center; }
 .logo-mark { display: flex; align-items: center; gap: 5rpx; height: 66rpx; margin-bottom: 12rpx; }
-.logo-mark text { display: block; width: 22rpx; height: 42rpx; color: #101013; background: #101013; font-size: 0; transform: skew(-18deg); }
+.logo-mark text { display: block; width: 22rpx; height: 42rpx; color: #fff; background: #fff; font-size: 0; transform: skew(-18deg); }
 .logo-mark text:nth-child(2) { height: 58rpx; margin-top: -18rpx; }
 .logo-mark { justify-content: center; }
 .brand { display: block; font-size: 96rpx; font-weight: 700; line-height: 1; letter-spacing: -3rpx; }
-.hero-title { display: block; margin-top: 40rpx; color: #9b9ca1; font-size: 38rpx; font-weight: 500; letter-spacing: 2rpx; }
+.hero-title { display: block; margin-top: 40rpx; color: #c4c8d8; font-size: 38rpx; font-weight: 500; letter-spacing: 2rpx; }
 .login-panel { padding: 42rpx 36rpx 70rpx; background: #f7f8fa; }
 .card { margin-bottom: 24rpx; padding: 36rpx; background: rgba(255,255,255,.78); border: 1rpx solid rgba(255,255,255,.9); border-radius: 30rpx; box-shadow: 0 16rpx 44rpx rgba(31,41,55,.08); box-sizing: border-box; }
 .login-card { padding: 46rpx 38rpx 40rpx; }
