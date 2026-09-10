@@ -1,10 +1,12 @@
 Page({
-  data: { dark: false, user: {}, avatarText: 'D' },
+  data: { dark: false, user: {}, avatarText: 'D', dropOpen: false, activeTab: 'display', activeLabel: '常规', tabs: [{ id: 'display', label: '常规' }, { id: 'appearance', label: '外观' }, { id: 'map', label: '地图' }, { id: 'notifications', label: '通知' }, { id: 'integrations', label: '集成' }, { id: 'offline', label: '离线' }, { id: 'account', label: '账号' }, { id: 'about', label: '关于 TREK' }] },
   onLoad() {
     const user = getApp().globalData.user || wx.getStorageSync('trek_user') || {}
     this.setData({ dark: wx.getStorageSync('trek_theme') === 'dark', user, avatarText: String(user.username || 'D').slice(0, 1).toUpperCase() })
   },
   toggleTheme() { const dark = !this.data.dark; wx.setStorageSync('trek_theme', dark ? 'dark' : 'light'); this.setData({ dark }) },
+  toggleTabs() { this.setData({ dropOpen: !this.data.dropOpen }) },
+  selectTab(e) { const id = e.currentTarget.dataset.id; const tab = this.data.tabs.find((item) => item.id === id); this.setData({ activeTab: id, activeLabel: tab ? tab.label : id, dropOpen: false }) },
   logout() {
     const app = getApp()
     app.globalData.token = ''

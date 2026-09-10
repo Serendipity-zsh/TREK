@@ -15,4 +15,7 @@ Page({
   markRead(event) { const item = this.data.items[event.currentTarget.dataset.index]; if (item && !item.is_read) api.markNotificationRead(item.id).then(() => this.load()).catch(() => {}) },
   remove(event) { const item = this.data.items[event.currentTarget.dataset.index]; if (item) api.deleteNotification(item.id).then(() => this.load()).catch(() => {}) },
   goHome() { wx.navigateBack({ delta: 1 }) },
+  openCalendar() { wx.navigateTo({ url: '../vacay/vacay' }) },
+  openAtlas() { wx.navigateTo({ url: '../atlas/atlas' }) },
+  openTools() { wx.navigateTo({ url: '../tools/tools' }) },
 })
