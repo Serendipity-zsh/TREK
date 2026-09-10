@@ -8,6 +8,7 @@
   </view>
   <view wx:if="{{centerMode === 'logo'}}" class="nav-logo">✦</view>
   <view wx:elif="{{centerMode === 'blank'}}" class="nav-add-slot"></view>
+  <view wx:elif="{{centerMode === 'search'}}" class="nav-add nav-search" bindtap="create">⌕</view>
   <view wx:else class="nav-add" bindtap="create">＋</view>
   <view class="nav-item {{active === 'atlas' ? 'selected' : ''}}" data-target="atlas" bindtap="navigate">
     <text class="nav-icon">◎</text>
