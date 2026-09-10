@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', editTitle: '', editSubtitle: '', showTripTracks: false, availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, uploading: false, showCreate: false, showSettings: false, title: '', body: '', entryDate: '', entryLocation: '', editTitle: '', editSubtitle: '', showTripTracks: false, availableTrips: [], selectedTripIds: [], error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
@@ -30,7 +30,7 @@ Page({
       if (!titleResult.confirm || !String(titleResult.content || '').trim()) return
       wx.showModal({ title: '编辑记录正文', editable: true, content: entry.body || '', success: (bodyResult) => {
         if (!bodyResult.confirm) return
-        api.updateJourneyEntry(entry.id, { title: String(titleResult.content).trim(), body: bodyResult.content || '' }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
+        api.updateJourneyEntry(entry.id, { title: String(titleResult.content).trim(), story: bodyResult.content || '', body: bodyResult.content || '' }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
       } })
     } })
   },
@@ -64,14 +64,17 @@ Page({
     const first = this.data.entries.find((entry) => entry.lat != null || entry.latitude != null)
     wx.navigateTo({ url: first ? `/pages/map/map?lat=${first.lat || first.latitude}&lng=${first.lng || first.longitude}` : '/pages/map/map' })
   },
-  openCreate() { this.setData({ showCreate: true, title: '', body: '' }) },
+  openCreate() { this.setData({ showCreate: true, title: '', body: '', entryDate: new Date().toISOString().slice(0, 10), entryLocation: '' }) },
   closeCreate() { this.setData({ showCreate: false }) },
   inputTitle(e) { this.setData({ title: e.detail.value }) },
   inputBody(e) { this.setData({ body: e.detail.value }) },
+  inputEntryLocation(e) { this.setData({ entryLocation: e.detail.value }) },
+  changeEntryDate(e) { this.setData({ entryDate: e.detail.value }) },
   submitCreate() {
     const title = (this.data.title || '').trim()
     if (!title) return wx.showToast({ title: '请输入标题', icon: 'none' })
-    api.createJourneyEntry(this.data.id, { title, body: this.data.body || '' }).then(() => { this.closeCreate(); this.load() }).catch((err) => wx.showToast({ title: err.message || '保存失败', icon: 'none' }))
+    if (!this.data.entryDate) return wx.showToast({ title: '请选择日期', icon: 'none' })
+    api.createJourneyEntry(this.data.id, { title, story: this.data.body || '', body: this.data.body || '', entry_date: this.data.entryDate, location_name: (this.data.entryLocation || '').trim() || null }).then(() => { this.closeCreate(); this.load() }).catch((err) => wx.showToast({ title: err.message || '保存失败', icon: 'none' }))
   },
   removeEntry(e) {
     const id = e.currentTarget.dataset.id
