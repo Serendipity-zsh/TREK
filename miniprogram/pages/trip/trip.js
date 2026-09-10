@@ -73,6 +73,15 @@ Page({
       .then(() => { this.setData({ showPlacePicker: false }); return this.load() })
       .catch((error) => wx.showToast({ title: error.errMsg || '添加地点失败', icon: 'none' }))
   },
+  removeAssignment(event) {
+    const day = this.data.days.find((item) => String(item.id) === String(event.currentTarget.dataset.dayId))
+    const assignment = day?.assignments?.find((item) => String(item.id) === String(event.currentTarget.dataset.id))
+    if (!day || !assignment) return
+    wx.showModal({ title: '移除这个地点？', content: '只会从当天计划中移除，不会删除地点本身。', success: (result) => {
+      if (!result.confirm) return
+      api.deleteAssignment(this.data.id, day.id, assignment.id).then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '移除失败', icon: 'none' }))
+    } })
+  },
   openMap() { wx.navigateTo({ url: `../map/map?tripId=${this.data.id}&dayId=${this.data.selectedDayId}` }) },
   openTools(event) { wx.navigateTo({ url: `../tools/tools?tripId=${this.data.id}&tab=${event.currentTarget.dataset.tab || 'todo'}` }) },
   goCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
