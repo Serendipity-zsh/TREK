@@ -183,12 +183,13 @@ Page({
   openPlace(e) {
     const place = this.data.visiblePlaces[e.currentTarget.dataset.index]
     if (!place) return
-    const actions = ['编辑地点', '打开地图', '复制到行程', '管理标签']
+    const actions = ['查看详情', '编辑地点', '打开地图', '复制到行程', '管理标签']
     wx.showActionSheet({ itemList: actions, success: (result) => {
-      if (result.tapIndex === 0) return this.editPlace(place)
-      if (result.tapIndex === 1) return this.openMap(e)
-      if (result.tapIndex === 2) return this.copyPlaceToTrip(place)
-      if (result.tapIndex === 3) return this.managePlaceLabels(e)
+      if (result.tapIndex === 0) return wx.navigateTo({ url: `/pages/collection-detail/collection-detail?id=${this.data.active.id}&placeId=${place.id}` })
+      if (result.tapIndex === 1) return this.editPlace(place)
+      if (result.tapIndex === 2) return this.openMap(e)
+      if (result.tapIndex === 3) return this.copyPlaceToTrip(place)
+      if (result.tapIndex === 4) return this.managePlaceLabels(e)
     } })
   },
   editPlace(place) {
