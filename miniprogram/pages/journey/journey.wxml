@@ -10,6 +10,6 @@
       </view>
     </block>
   </scroll-view>
-  <view class="bottom"><view class="nav" bindtap="openHome">▦<text>行程</text></view><view class="nav" bindtap="openCalendar">▣<text>日历</text></view><view class="nav-add" bindtap="openCreate">＋</view><view class="nav active" bindtap="openAtlas">◎<text>旅记</text></view><view class="nav" bindtap="openTools">•••<text>更多</text></view></view>
+  <bottom-nav active="more" bind:create="openCreate" />
   <view wx:if="{{showCreate}}" class="mask" catchtap="closeCreate"><view class="sheet" catchtap="noop"><text class="sheet-title">新建旅记</text><input placeholder="例如：日本秋日" value="{{title}}" bindinput="onTitleInput" /><button class="primary" bindtap="submitCreate">创建</button></view></view>
 </view>

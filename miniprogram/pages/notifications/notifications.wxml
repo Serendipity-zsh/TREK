@@ -3,5 +3,5 @@
   <view class="filter" bindtap="toggleFilter"><text class="filter-option {{!unreadOnly ? 'active' : ''}}">全部</text><text class="filter-option {{unreadOnly ? 'active' : ''}}">未读</text></view>
   <view wx:if="{{loading}}" class="empty">正在加载…</view><text wx:if="{{error}}" class="error">{{error}}</text><view wx:if="{{!loading && !items.length}}" class="empty">暂时没有通知</view>
   <view wx:for="{{items}}" wx:key="id" class="notification {{item.is_read ? '' : 'unread'}}" data-index="{{index}}" bindtap="markRead"><view class="notice-icon">♧</view><view class="notice-copy"><text class="notice-title">{{item.title || item.title_key || 'TREK 通知'}}</text><text class="notice-body">{{item.body || item.text || item.text_key || '你有一条新的旅行通知'}}</text></view><view class="notice-actions"><text wx:if="{{!item.is_read}}" class="dot">●</text><text class="remove" catchtap="remove" data-index="{{index}}">⌫</text></view></view>
-  <view class="bottom-nav"><view class="nav-item" bindtap="goHome">▦<text>行程</text></view><view class="nav-item" bindtap="openCalendar">▣<text>日历</text></view><view class="nav-add" bindtap="goHome">＋</view><view class="nav-item" bindtap="openAtlas">◎<text>探索</text></view><view class="nav-item" bindtap="openTools">•••<text>更多</text></view></view>
+  <bottom-nav active="more" bind:create="goHome" />
 </view>

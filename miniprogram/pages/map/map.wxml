@@ -13,5 +13,5 @@
     <button class="save-button" data-index="{{index}}" catchtap="saveResult">保存</button>
   </view>
   <view class="quick-links"><view bindtap="openCollections">♧ <text>收藏</text><text>›</text></view><view bindtap="openJourney">◎ <text>旅程</text><text>›</text></view></view>
-  <view class="bottom-nav"><view class="nav-item" bindtap="goHome">▦<text>行程</text></view><view class="nav-item">▣<text>日历</text></view><view class="nav-add">⌕</view><view class="nav-item selected">◎<text>探索</text></view><view class="nav-item" bindtap="openTools">•••<text>更多</text></view></view>
+  <bottom-nav active="atlas" bind:create="search" />
 </view>

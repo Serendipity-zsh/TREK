@@ -13,5 +13,5 @@
       <view wx:for="{{item.weeks}}" wx:for-item="week" wx:key="index" class="week-row"><text wx:for="{{week}}" wx:for-item="day" wx:key="index" class="day {{day ? '' : 'blank'}}">{{day}}</text></view>
     </view>
   </view>
-  <view class="bottom-nav"><view class="nav-item" bindtap="goHome">▦<text>行程</text></view><view class="nav-item selected">▣<text>日历</text></view><view class="nav-add" bindtap="openTools">✎</view><view class="nav-item">◎<text>探索</text></view><view class="nav-item" bindtap="openTools">•••<text>更多</text></view></view>
+  <bottom-nav active="calendar" bind:create="openTools" />
 </view>

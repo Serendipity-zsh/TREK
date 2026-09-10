@@ -10,5 +10,5 @@
   <view wx:elif="{{activeTab === 'account'}}"><view class="profile-card"><view class="avatar">{{avatarText}}</view><view><text class="profile-name">{{user.username || '微信用户'}}</text><text class="profile-email">{{user.email || '微信安全登录'}}</text></view></view><view class="section-label">账号</view><view class="setting-row"><view><text class="setting-title">微信登录</text><text class="setting-copy">当前账号由微信安全身份管理</text></view><text class="setting-state">已连接</text></view><button class="logout" bindtap="logout">退出登录</button></view>
   <view wx:else><view class="section-label">关于 TREK</view><view class="about-card"><text class="about-title">TREK 旅行规划助手</text><text class="about-copy">原生微信小程序版，使用微信登录、微信云托管和高德地图服务。</text><text class="about-copy">开源项目：liketrek/TREK</text></view></view>
   <view wx:if="{{activeTab !== 'account'}}" class="account-action"><button class="logout" bindtap="logout">退出登录</button></view>
-  <view class="bottom-nav"><view class="nav-item selected" bindtap="goHome">▦<text>行程</text></view><view class="nav-item" bindtap="openCalendar">▣<text>日历</text></view><view class="nav-add" bindtap="goHome">＋</view><view class="nav-item" bindtap="openMap">◎<text>探索</text></view><view class="nav-item" bindtap="openTools">•••<text>更多</text></view></view>
+  <bottom-nav active="more" bind:create="goHome" />
 </view>

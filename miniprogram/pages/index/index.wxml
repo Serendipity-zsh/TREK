@@ -66,13 +66,7 @@
         <view class="trip-card-head"><text class="trip-title">{{item.title}}</text><text class="trip-date">{{item.start_date || '待定'}}{{item.end_date ? ' → ' + item.end_date : ''}}</text></view>
         <view class="trip-card-line"><text class="trip-status">● {{item.status || '规划中'}}</text><text class="trip-place">{{item.place_count || 0}} 个目的地</text></view>
       </view>
-      <view class="bottom-nav">
-        <view class="nav-item selected">▦<text>行程</text></view>
-        <view class="nav-item" bindtap="openCalendar">▣<text>日历</text></view>
-        <view class="nav-add" bindtap="createTrip">＋</view>
-        <view class="nav-item" bindtap="openMap">◎<text>探索</text></view>
-        <view class="nav-item" bindtap="openTools">•••<text>更多</text></view>
-      </view>
+      <bottom-nav active="home" bind:create="createTrip" />
     </view>
   </block>
 </view>

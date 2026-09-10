@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "地点和地图"
+  "navigationBarTitleText": "地点和地图",
+  "usingComponents": {"bottom-nav": "/components/bottom-nav/bottom-nav"}
 }

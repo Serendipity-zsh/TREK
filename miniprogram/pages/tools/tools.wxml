@@ -5,7 +5,7 @@
     <text class="feature-label">模块化附加组件</text>
     <view class="feature-grid"><view class="feature-card" bindtap="openJourney"><text>▣ Journey</text><text>记录旅行、照片和旅程故事</text></view><view class="feature-card" bindtap="openMap"><text>◎ Atlas</text><text>探索地图、搜索地点和规划路线</text></view><view class="feature-card"><text>☷ Packing</text><text>按旅行管理清单</text></view><view class="feature-card" bindtap="openCollections"><text>▤ Collections</text><text>保存和整理想去的地点</text></view><view class="feature-card"><text>▧ Documents</text><text>将文件附加到旅行</text></view><view class="feature-card"><text>⇄ Widgets</text><text>货币换算和时区工具</text></view></view>
     <button class="settings-entry" bindtap="openSettings">设置</button>
-    <view class="bottom-nav"><view class="nav-item" bindtap="goHome">▦<text>行程</text></view><view class="nav-item" bindtap="goHome">▣<text>日历</text></view><view class="nav-add" bindtap="goHome">＋</view><view class="nav-item" bindtap="goHome">◎<text>探索</text></view><view class="nav-item selected">•••<text>更多</text></view></view>
+    <bottom-nav active="more" bind:create="goHome" />
   </block>
   <block wx:else>
   <view class="tabs"><button data-tab="todo" class="{{tab == 'todo' ? 'active' : ''}}" bindtap="switchTab">待办</button><button data-tab="packing" class="{{tab == 'packing' ? 'active' : ''}}" bindtap="switchTab">行李</button><button data-tab="budget" class="{{tab == 'budget' ? 'active' : ''}}" bindtap="switchTab">预算</button><button data-tab="reservations" class="{{tab == 'reservations' ? 'active' : ''}}" bindtap="switchTab">预订</button><button data-tab="weather" class="{{tab == 'weather' ? 'active' : ''}}" bindtap="switchTab">天气</button></view>
