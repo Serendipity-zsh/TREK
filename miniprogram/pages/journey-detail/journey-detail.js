@@ -18,7 +18,22 @@ Page({
       this.updateMarkers(list)
     }).catch((err) => this.setData({ loading: false, error: err.message || '旅记加载失败' }))
   },
-  selectEntry(e) { this.setData({ activeId: String(e.currentTarget.dataset.id) === this.data.activeId ? '' : String(e.currentTarget.dataset.id) }) },
+  selectEntry(e) {
+    const id = String(e.currentTarget.dataset.id)
+    if (id !== this.data.activeId) return this.setData({ activeId: id })
+    const entry = this.data.entries.find((item) => String(item.id) === id)
+    wx.showActionSheet({ itemList: ['编辑记录', '收起'], success: (result) => { if (result.tapIndex === 0) this.editEntry(entry); else this.setData({ activeId: '' }) } })
+  },
+  editEntry(entry) {
+    if (!entry) return
+    wx.showModal({ title: '编辑记录标题', editable: true, content: entry.title || '', success: (titleResult) => {
+      if (!titleResult.confirm || !String(titleResult.content || '').trim()) return
+      wx.showModal({ title: '编辑记录正文', editable: true, content: entry.body || '', success: (bodyResult) => {
+        if (!bodyResult.confirm) return
+        api.updateJourneyEntry(entry.id, { title: String(titleResult.content).trim(), body: bodyResult.content || '' }).then(() => { wx.showToast({ title: '已保存', icon: 'success' }); this.load() }).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' }))
+      } })
+    } })
+  },
   showList() { this.setData({ view: 'list' }) },
   showMap() { this.setData({ view: 'map' }) },
   showGallery() { this.setData({ view: 'gallery' }) },
