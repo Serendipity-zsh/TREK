@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], gallery: [], loading: true, showCreate: false, title: '', body: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], shareLink: null, loading: true, showCreate: false, title: '', body: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
@@ -10,6 +10,7 @@ Page({
       const full = journey.journey || journey
       const gallery = Array.isArray(full.gallery) ? full.gallery : []
       this.setData({ journey: full, entries: list, gallery, loading: false })
+      api.getJourneyShareLink(this.data.id).then((share) => this.setData({ shareLink: share.link || null })).catch(() => {})
       Promise.all(gallery.map((photo) => {
         if (photo.media_type === 'video' || !photo.photo_id) return Promise.resolve(photo)
         return api.getPhotoThumbnailData(photo.photo_id).then((data) => ({ ...photo, photo_url: data.data_url })).catch(() => photo)
@@ -43,6 +44,22 @@ Page({
   removeEntry(e) {
     const id = e.currentTarget.dataset.id
     wx.showModal({ title: '删除这篇记录？', success: (r) => { if (r.confirm) api.deleteJourneyEntry(id).then(() => this.load()) } })
+  },
+  openActions() {
+    const items = this.data.shareLink ? ['复制分享令牌', '关闭公开分享'] : ['创建公开分享']
+    wx.showActionSheet({ itemList: items, success: (result) => {
+      if (!this.data.shareLink) {
+        return api.createJourneyShareLink(this.data.id, { share_timeline: true, share_gallery: true, share_map: true }).then((share) => {
+          this.setData({ shareLink: share });
+          wx.setClipboardData({ data: share.token, success: () => wx.showToast({ title: '已创建并复制令牌', icon: 'success' }) })
+        }).catch((err) => wx.showToast({ title: err.errMsg || '创建分享失败', icon: 'none' }))
+      }
+      if (result.tapIndex === 0) return wx.setClipboardData({ data: this.data.shareLink.token, success: () => wx.showToast({ title: '已复制令牌', icon: 'success' }) })
+      wx.showModal({ title: '关闭公开分享？', content: '关闭后，之前的公开链接将不能继续访问。', success: (choice) => {
+        if (!choice.confirm) return
+        api.deleteJourneyShareLink(this.data.id).then(() => { this.setData({ shareLink: null }); wx.showToast({ title: '已关闭分享', icon: 'success' }) }).catch((err) => wx.showToast({ title: err.errMsg || '关闭失败', icon: 'none' }))
+      } })
+    } })
   },
   noop() {},
   openCalendar() { wx.navigateTo({ url: '/pages/vacay/vacay' }) },
