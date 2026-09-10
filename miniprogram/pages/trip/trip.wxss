@@ -5,3 +5,20 @@
 .list-switch{display:flex;gap:12rpx;margin:18rpx 0}.list-switch button{flex:1;margin:0;color:#777;background:#fff;font-size:24rpx}.list-switch button.active{color:#fff;background:#111218}.cost-summary{margin:18rpx 0;padding:24rpx;border-radius:22rpx;background:#fff;font-size:25rpx}.cost-summary text{float:right;font-weight:900}.inline-record{gap:14rpx}.inline-copy{flex:1;min-width:0}.inline-check{display:flex;align-items:center;justify-content:center;width:44rpx;height:44rpx;border:2rpx solid #aab1bb;border-radius:50%;color:#fff}.inline-check.checked{background:#1aad70;border-color:#1aad70}.done{text-decoration:line-through;color:#9299a4}
 .file-record{gap:18rpx}.file-copy{flex:1;min-width:0}.file-star,.file-remove{padding:12rpx;font-size:34rpx}.file-star{color:#a5aab2}.file-star.on{color:#f2a900}.file-remove{color:#c53d55}
 .record-copy{flex:1;min-width:0}
+.collab-tabs{display:flex;gap:8rpx;margin:18rpx 0;padding:7rpx;border-radius:36rpx;background:rgba(255,255,255,.6)}
+.collab-tab{flex:1;padding:16rpx 8rpx;border-radius:28rpx;color:#777;text-align:center;font-size:24rpx}
+.collab-tab.active{background:#111218;color:#fff}
+.chat-feed{height:620rpx;padding:4rpx 0}
+.chat-row{display:flex;gap:16rpx;margin:18rpx 0}
+.chat-avatar{display:flex;flex:none;align-items:center;justify-content:center;width:58rpx;height:58rpx;border-radius:50%;background:#4d4ddf;color:#fff;font-size:25rpx;font-weight:700}
+.chat-bubble{max-width:74%;padding:18rpx 20rpx;border-radius:20rpx 20rpx 20rpx 6rpx;background:#fff;color:#202027;font-size:26rpx;line-height:1.45}
+.chat-meta{margin-bottom:7rpx;color:#969ba5;font-size:19rpx}
+.chat-compose{display:flex;gap:12rpx;margin:14rpx 0 22rpx;padding:8rpx;border-radius:24rpx;background:#fff}
+.chat-compose input{flex:1;height:66rpx;padding:0 14rpx;font-size:24rpx}
+.chat-compose button{margin:0;padding:0 22rpx;color:#fff;background:#111218;border-radius:18rpx;font-size:23rpx}
+.poll-card{margin-bottom:18rpx;padding:26rpx;border-radius:24rpx;background:#fff}
+.poll-head,.poll-actions{display:flex;align-items:center;justify-content:space-between;gap:14rpx}
+.poll-state{color:#1aad70;font-size:21rpx}
+.poll-option{display:flex;justify-content:space-between;margin-top:14rpx;padding:18rpx 20rpx;border:1rpx solid #e5e7eb;border-radius:16rpx;color:#27272a;font-size:24rpx}
+.poll-option text:last-child{color:#8b95a7;font-size:21rpx}
+.poll-actions{margin-top:18rpx;color:#1aad70;font-size:21rpx}

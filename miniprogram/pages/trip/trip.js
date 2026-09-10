@@ -1,7 +1,7 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0, collabNotes: [], files: [], uploadingFile: false, listKind: 'todo', listItems: [], listTotal: 0 },
+  data: { id: '', trip: null, days: [], places: [], loading: true, error: '', selectedDayId: '', showPlacePicker: false, activeTab: 'plan', tabItems: [], tabLoading: false, tabTotal: 0, collabTab: 'notes', collabNotes: [], collabMessages: [], collabPolls: [], chatInput: '', files: [], uploadingFile: false, listKind: 'todo', listItems: [], listTotal: 0 },
   onLoad(options) { this.setData({ id: options.id || '', activeTab: options.tab || 'plan' }); this.load() },
   onPullDownRefresh() { this.load().finally(() => wx.stopPullDownRefresh()) },
   load() {
@@ -29,7 +29,7 @@ Page({
     if (tab === 'lists') return this.loadInlineList(this.data.listKind)
     if (tab === 'costs') return this.loadInlineList('budget')
     this.setData({ tabLoading: true })
-    if (tab === 'collab') return api.listCollabNotes(this.data.id).then((result) => this.setData({ collabNotes: result.notes || [] })).catch((error) => this.setData({ error: error.errMsg || '协作记录加载失败' })).finally(() => this.setData({ tabLoading: false }))
+    if (tab === 'collab') return this.loadCollab().finally(() => this.setData({ tabLoading: false }))
     if (tab === 'files') return api.listTripFiles(this.data.id).then((result) => this.setData({ files: result.files || [] })).catch((error) => this.setData({ error: error.errMsg || '文件列表加载失败' })).finally(() => this.setData({ tabLoading: false }))
     return api.listReservations(this.data.id).then((result) => {
       const reservations = Array.isArray(result.reservations) ? result.reservations : (Array.isArray(result.items) ? result.items : [])
@@ -39,6 +39,57 @@ Page({
         : reservations.filter((item) => !transportTypes.includes(String(item.type || '').toLowerCase()))
       this.setData({ tabItems: items, tabTotal: items.length })
     }).catch((error) => this.setData({ error: error.errMsg || '行程数据加载失败' })).finally(() => this.setData({ tabLoading: false }))
+  },
+  switchCollab(event) {
+    const collabTab = event.currentTarget.dataset.tab
+    if (!collabTab || collabTab === this.data.collabTab) return
+    this.setData({ collabTab, tabLoading: true })
+    this.loadCollab().finally(() => this.setData({ tabLoading: false }))
+  },
+  loadCollab() {
+    const requests = {
+      notes: () => api.listCollabNotes(this.data.id).then((result) => this.setData({ collabNotes: result.notes || [] })),
+      chat: () => api.listCollabMessages(this.data.id).then((result) => this.setData({ collabMessages: (result.messages || []).map((message) => ({ ...message, avatarText: String(message.username || 'T').slice(0, 1).toUpperCase() })) })),
+      polls: () => api.listCollabPolls(this.data.id).then((result) => this.setData({ collabPolls: result.polls || [] })),
+    }
+    return (requests[this.data.collabTab] || requests.notes)().catch((error) => this.setData({ error: error.errMsg || '协作记录加载失败' }))
+  },
+  inputChat(event) { this.setData({ chatInput: event.detail.value || '' }) },
+  sendChat() {
+    const text = String(this.data.chatInput || '').trim()
+    if (!text) return
+    api.createCollabMessage(this.data.id, { text }).then(() => { this.setData({ chatInput: '' }); return this.loadCollab() }).catch((error) => wx.showToast({ title: error.errMsg || '发送失败', icon: 'none' }))
+  },
+  removeChatMessage(event) {
+    const message = this.data.collabMessages[event.currentTarget.dataset.index]
+    if (!message) return
+    wx.showModal({ title: '删除这条消息？', success: (result) => { if (result.confirm) api.deleteCollabMessage(this.data.id, message.id).then(() => this.loadCollab()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' })) } })
+  },
+  createPoll() {
+    Promise.all([
+      this.askReservationField('投票问题', '', '例如：下一站去哪里？'),
+      this.askReservationField('选项（用逗号分隔）', '', '例如：京都，大阪，奈良'),
+    ]).then(([question, rawOptions]) => {
+      const options = String(rawOptions || '').split(/[，,]/).map((item) => item.trim()).filter(Boolean).slice(0, 8)
+      if (!question || options.length < 2) return wx.showToast({ title: '至少填写问题和两个选项', icon: 'none' })
+      return api.createCollabPoll(this.data.id, { question, options, multiple: false }).then(() => { wx.showToast({ title: '投票已创建', icon: 'success' }); return this.loadCollab() })
+    }).catch((error) => wx.showToast({ title: error.errMsg || '创建投票失败', icon: 'none' }))
+  },
+  votePoll(event) {
+    const poll = this.data.collabPolls[event.currentTarget.dataset.pollIndex]
+    const optionIndex = Number(event.currentTarget.dataset.optionIndex)
+    if (!poll || poll.is_closed) return
+    api.voteCollabPoll(this.data.id, poll.id, optionIndex).then(() => this.loadCollab()).catch((error) => wx.showToast({ title: error.errMsg || '投票失败', icon: 'none' }))
+  },
+  closePoll(event) {
+    const poll = this.data.collabPolls[event.currentTarget.dataset.index]
+    if (!poll) return
+    api.closeCollabPoll(this.data.id, poll.id).then(() => this.loadCollab()).catch((error) => wx.showToast({ title: error.errMsg || '关闭失败', icon: 'none' }))
+  },
+  deletePoll(event) {
+    const poll = this.data.collabPolls[event.currentTarget.dataset.index]
+    if (!poll) return
+    wx.showModal({ title: '删除这个投票？', success: (result) => { if (result.confirm) api.deleteCollabPoll(this.data.id, poll.id).then(() => this.loadCollab()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' })) } })
   },
   loadInlineList(kind) {
     const request = kind === 'todo' ? api.listTodo(this.data.id) : kind === 'packing' ? api.listPacking(this.data.id) : api.listBudget(this.data.id)
