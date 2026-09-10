@@ -220,6 +220,19 @@ Page({
     } })
   },
 
+  openTripActions(event) {
+    const trip = this.data.trips.find((item) => String(item.id) === String(event.currentTarget.dataset.id))
+    if (!trip) return
+    const archived = !!trip.is_archived
+    const items = archived ? ['编辑', '复制', '恢复', '永久删除'] : ['编辑', '复制', '归档', '删除']
+    wx.showActionSheet({ itemList: items, success: (result) => {
+      if (result.tapIndex === 0) return wx.showModal({ title: '编辑行程名称', editable: true, content: trip.title || '', success: (choice) => { const title = String(choice.content || '').trim(); if (choice.confirm && title) api.updateTrip(trip.id, { title }).then(() => this.loadTrips()).catch((err) => wx.showToast({ title: err.errMsg || '保存失败', icon: 'none' })) } })
+      if (result.tapIndex === 1) return wx.showModal({ title: '复制行程', content: `复制「${trip.title}」？`, success: (choice) => { if (!choice.confirm) return; api.createTrip({ title: `${trip.title}（副本）`, description: trip.description || null, start_date: trip.start_date || null, end_date: trip.end_date || null, currency: trip.currency || 'EUR', day_count: trip.day_count || 1 }).then(() => this.loadTrips()).catch((err) => wx.showToast({ title: err.errMsg || '复制失败', icon: 'none' })) } })
+      if (result.tapIndex === 2) return api.updateTrip(trip.id, { is_archived: !archived }).then(() => { wx.showToast({ title: archived ? '已恢复' : '已归档', icon: 'success' }); return this.loadTrips() }).catch((err) => wx.showToast({ title: err.errMsg || '操作失败', icon: 'none' }))
+      wx.showModal({ title: archived ? '永久删除行程？' : '删除行程？', content: '删除后行程内容无法恢复。', confirmColor: '#d6455d', success: (choice) => { if (choice.confirm) api.deleteTrip(trip.id).then(() => this.loadTrips()).catch((err) => wx.showToast({ title: err.errMsg || '删除失败', icon: 'none' })) } })
+    } })
+  },
+
   createTrip() { this.setData({ createOpen: true, createForm: { title: '', description: '', start_date: '', end_date: '', currency: 'EUR' } }) },
   closeCreate() { this.setData({ createOpen: false }) },
   inputCreate(e) { this.setData({ [`createForm.${e.currentTarget.dataset.field}`]: e.detail.value }) },
