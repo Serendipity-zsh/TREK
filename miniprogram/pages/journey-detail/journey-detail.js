@@ -37,5 +37,6 @@ Page({
     const id = e.currentTarget.dataset.id
     wx.showModal({ title: '删除这篇记录？', success: (r) => { if (r.confirm) api.deleteJourneyEntry(id).then(() => this.load()) } })
   },
+  noop() {},
   back() { wx.navigateBack({ delta: 1 }) },
 })

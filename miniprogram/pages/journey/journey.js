@@ -19,6 +19,7 @@ Page({
     createJourney({ title }).then(() => { this.closeCreate(); this.load() }).catch((err) => wx.showToast({ title: err.message || '创建失败', icon: 'none' }))
   },
   openJourney(e) { wx.navigateTo({ url: `/pages/journey-detail/journey-detail?id=${e.currentTarget.dataset.id}` }) },
+  noop() {},
   openTools() { wx.navigateTo({ url: '/pages/tools/tools' }) },
   openMap() { wx.switchTab ? wx.navigateTo({ url: '/pages/map/map' }) : null },
   openHome() { wx.navigateBack({ delta: 1 }) },
