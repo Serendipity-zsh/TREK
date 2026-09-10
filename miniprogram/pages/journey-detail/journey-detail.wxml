@@ -23,6 +23,7 @@
     <view wx:elif="{{!gallery.length}}" class="empty">还没有照片，点击上方上传照片。</view>
     <view wx:for="{{gallery}}" wx:key="id" class="gallery-card" data-index="{{index}}" bindtap="openPhotoActions">
       <image wx:if="{{item.url || item.photo_url}}" class="gallery-image" src="{{item.url || item.photo_url}}" mode="aspectFill" />
+      <view wx:elif="{{item.media_type === 'video'}}" class="gallery-placeholder video-placeholder">▶<text>视频{{item.durationLabel ? ' · ' + item.durationLabel : ''}}</text></view>
       <view wx:else class="gallery-placeholder">⌁</view>
       <view class="gallery-copy">
         <view class="gallery-caption-row"><text class="gallery-caption">{{item.caption || '旅程照片'}}</text><text class="gallery-more">•••</text></view>

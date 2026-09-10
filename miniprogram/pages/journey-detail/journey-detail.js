@@ -8,7 +8,7 @@ Page({
     Promise.all([api.getJourney(this.data.id), api.listJourneyEntries(this.data.id)]).then(([journey, entries]) => {
       const list = entries.entries || entries || []
       const full = journey.journey || journey
-      const gallery = Array.isArray(full.gallery) ? full.gallery : []
+      const gallery = (Array.isArray(full.gallery) ? full.gallery : []).map((photo) => ({ ...photo, durationLabel: photo.duration_ms ? `${Math.round(Number(photo.duration_ms) / 1000)} 秒` : '' }))
       this.setData({ journey: full, entries: list, gallery, loading: false })
       api.getJourneyShareLink(this.data.id).then((share) => this.setData({ shareLink: share.link || null })).catch(() => {})
       Promise.all(gallery.map((photo) => {
