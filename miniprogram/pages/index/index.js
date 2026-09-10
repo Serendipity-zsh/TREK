@@ -13,6 +13,8 @@ Page({
     upcomingReservations: [],
     collectionsCount: 0,
     collectionItems: [],
+    showCollections: true,
+    showUpcoming: true,
     widgetLoading: false,
     tripFilter: 'planned',
     viewMode: 'grid',
@@ -29,15 +31,25 @@ Page({
     if (app.globalData.token) {
       const cachedUser = app.globalData.user
       this.setData({ loggedIn: true, user: cachedUser, avatarText: this.avatarText(cachedUser) })
+      this.loadWidgetPreferences()
       this.loadTrips()
     }
+  },
+
+  loadWidgetPreferences() {
+    return api.getSettings().then((result) => {
+      const settings = result.settings || {}
+      const appearance = settings.appearance || {}
+      const mobile = appearance.dashboard?.mobile || {}
+      this.setData({ showCollections: mobile.collections !== false, showUpcoming: mobile.upcomingReservations !== false })
+    }).catch(() => {})
   },
 
   handleDemoLogin() {
     if (this.data.loading) return
     this.setData({ loading: true, error: '' })
     api.demoLogin()
-      .then(({ user }) => { this.setData({ loggedIn: true, user, avatarText: this.avatarText(user), welcomeOpen: !wx.getStorageSync('trek_welcome_seen') }); return this.loadTrips() })
+      .then(({ user }) => { this.setData({ loggedIn: true, user, avatarText: this.avatarText(user), welcomeOpen: !wx.getStorageSync('trek_welcome_seen') }); this.loadWidgetPreferences(); return this.loadTrips() })
       .catch((error) => this.setData({ error: error.errMsg || '预览登录失败，请在云托管开启 DEMO_MODE' }))
       .finally(() => this.setData({ loading: false }))
   },
@@ -48,6 +60,7 @@ Page({
     api.login()
       .then(({ user }) => {
         this.setData({ loggedIn: true, user, avatarText: this.avatarText(user), welcomeOpen: !wx.getStorageSync('trek_welcome_seen') })
+        this.loadWidgetPreferences()
         return this.loadTrips()
       })
       .catch((error) => {
@@ -113,7 +126,7 @@ Page({
     app.globalData.user = null
     wx.removeStorageSync('trek_token')
     wx.removeStorageSync('trek_user')
-    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, upcomingReservations: [], collectionItems: [], collectionsCount: 0, error: '' })
+    this.setData({ loggedIn: false, user: null, avatarText: 'D', trips: [], visibleTrips: [], featuredTrip: null, upcomingReservations: [], collectionItems: [], collectionsCount: 0, showCollections: true, showUpcoming: true, error: '' })
   },
 
   openMap() {
