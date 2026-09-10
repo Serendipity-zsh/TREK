@@ -1,19 +1,21 @@
 const api = require('../../utils/api')
 Page({
-  data: { id: '', journey: null, entries: [], loading: true, showCreate: false, title: '', body: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
+  data: { id: '', journey: null, entries: [], gallery: [], loading: true, showCreate: false, title: '', body: '', error: '', view: 'list', activeId: '', markers: [], mapLatitude: 31.23, mapLongitude: 121.47 },
   onLoad(options) { this.setData({ id: options.id || '' }); this.load() },
   load() {
     if (!this.data.id) return
     this.setData({ loading: true, error: '' })
     Promise.all([api.getJourney(this.data.id), api.listJourneyEntries(this.data.id)]).then(([journey, entries]) => {
       const list = entries.entries || entries || []
-      this.setData({ journey: journey.journey || journey, entries: list, loading: false })
+      const full = journey.journey || journey
+      this.setData({ journey: full, entries: list, gallery: Array.isArray(full.gallery) ? full.gallery : [], loading: false })
       this.updateMarkers(list)
     }).catch((err) => this.setData({ loading: false, error: err.message || '旅记加载失败' }))
   },
   selectEntry(e) { this.setData({ activeId: String(e.currentTarget.dataset.id) === this.data.activeId ? '' : String(e.currentTarget.dataset.id) }) },
   showList() { this.setData({ view: 'list' }) },
   showMap() { this.setData({ view: 'map' }) },
+  showGallery() { this.setData({ view: 'gallery' }) },
   updateMarkers(entries) {
     const points = entries.filter((entry) => Number.isFinite(Number(entry.lat || entry.latitude)) && Number.isFinite(Number(entry.lng || entry.longitude)))
     const markers = points.map((entry, index) => ({ id: Number(entry.id || index), latitude: Number(entry.lat || entry.latitude), longitude: Number(entry.lng || entry.longitude), width: 30, height: 30, callout: { content: entry.title || '旅记', display: 'ALWAYS', padding: 6, borderRadius: 8 } }))
