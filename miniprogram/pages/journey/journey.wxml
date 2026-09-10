@@ -1,0 +1,15 @@
+<view class="page">
+  <view class="top"><text class="back" bindtap="openTools">‹</text><text class="title">旅记</text><button class="create" bindtap="openCreate">＋ 新建旅记</button></view>
+  <scroll-view scroll-y class="feed">
+    <view wx:if="{{loading}}" class="empty">正在加载…</view>
+    <view wx:elif="{{error}}" class="empty error">{{error}}</view>
+    <view wx:elif="{{!journeys.length}}" class="empty"><text class="empty-mark">✦</text><text>还没有旅记，记录一次旅程吧。</text></view>
+    <block wx:else>
+      <view wx:for="{{journeys}}" wx:key="id" class="journey-card" data-id="{{item.id}}" bindtap="openJourney">
+        <view class="cover"><text>trek</text></view><view class="journey-body"><text class="journey-title">{{item.title}}</text><text class="stats">{{item.entry_count || 0}} 篇 · {{item.photo_count || 0}} 张 · {{item.place_count || 0}} 个地点</text></view>
+      </view>
+    </block>
+  </scroll-view>
+  <view class="bottom"><view class="nav" bindtap="openTools">•••<text>更多</text></view><view class="nav active">▤<text>旅记</text></view><view class="nav" bindtap="openMap">◎<text>探索</text></view></view>
+  <view wx:if="{{showCreate}}" class="mask" catchtap="closeCreate"><view class="sheet" catchtap="noop"><text class="sheet-title">新建旅记</text><input placeholder="例如：日本秋日" value="{{title}}" bindinput="onTitleInput" /><button class="primary" bindtap="submitCreate">创建</button></view></view>
+</view>

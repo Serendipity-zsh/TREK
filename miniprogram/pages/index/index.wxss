@@ -1,49 +1,75 @@
-.page {
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
+.page { min-height: 100vh; box-sizing: border-box; }
 .login-shell { min-height: 100vh; background: #f7f8fa; }
-.login-hero {
-  position: relative;
-  min-height: 760rpx;
-  overflow: hidden;
-  background: radial-gradient(circle at 42% 28%, #25266e 0, #11153d 38%, #060b20 100%);
-}
-.dot-field {
-  position: absolute;
-  inset: 0;
-  opacity: .55;
-  background-image: radial-gradient(#7782bd 1.5rpx, transparent 1.5rpx);
-  background-size: 20rpx 20rpx;
-  mask-image: linear-gradient(145deg, #fff, transparent 76%);
-}
-.hero-content { position: absolute; left: 56rpx; right: 56rpx; bottom: 92rpx; color: #fff; }
+.login-hero { position: relative; min-height: 390rpx; overflow: hidden; background: #f7f8fa; }
+.hero-content { position: absolute; top: 82rpx; right: 56rpx; left: 56rpx; color: #101013; text-align: center; }
 .logo-mark { display: flex; align-items: center; gap: 5rpx; height: 66rpx; margin-bottom: 12rpx; }
-.logo-mark text { display: block; width: 22rpx; height: 42rpx; color: #fff; background: #fff; font-size: 0; transform: skew(-18deg); }
+.logo-mark text { display: block; width: 22rpx; height: 42rpx; color: #101013; background: #101013; font-size: 0; transform: skew(-18deg); }
 .logo-mark text:nth-child(2) { height: 58rpx; margin-top: -18rpx; }
+.logo-mark { justify-content: center; }
 .brand { display: block; font-size: 96rpx; font-weight: 700; line-height: 1; letter-spacing: -3rpx; }
-.hero-title { display: block; margin-top: 52rpx; font-size: 46rpx; font-weight: 650; letter-spacing: 2rpx; }
-.hero-copy { display: block; margin-top: 24rpx; color: #b7bfd9; font-size: 25rpx; line-height: 1.7; }
+.hero-title { display: block; margin-top: 40rpx; color: #9b9ca1; font-size: 38rpx; font-weight: 500; letter-spacing: 2rpx; }
 .login-panel { padding: 42rpx 36rpx 70rpx; background: #f7f8fa; }
-.card { margin-bottom: 24rpx; padding: 36rpx; background: #fff; border-radius: 24rpx; box-shadow: 0 10rpx 36rpx rgba(31, 41, 55, .06); }
+.card { margin-bottom: 24rpx; padding: 36rpx; background: rgba(255,255,255,.78); border: 1rpx solid rgba(255,255,255,.9); border-radius: 30rpx; box-shadow: 0 16rpx 44rpx rgba(31,41,55,.08); box-sizing: border-box; }
 .login-card { padding: 46rpx 38rpx 40rpx; }
 .card-title { display: block; color: #111827; font-size: 42rpx; font-weight: 700; }
 .card-copy { display: block; margin: 12rpx 0 58rpx; color: #9aa2b2; font-size: 27rpx; }
+.field-label { display: block; margin: 24rpx 0 12rpx; color: #292a30; font-size: 24rpx; font-weight: 650; text-align: left; }
+.fake-field { display: flex; align-items: center; gap: 16rpx; height: 78rpx; padding: 0 22rpx; border: 2rpx solid #e3e3e7; border-radius: 20rpx; color: #a0a1a7; font-size: 28rpx; text-align: left; }
+.fake-field text { color: #777983; font-size: 25rpx; }
 .primary { width: 100%; margin: 0; color: #fff; background: #101827; border-radius: 16rpx; font-size: 30rpx; }
-.dev-login { width: 100%; margin: 20rpx 0 0; color: #1aad70; background: #edf9f3; border-radius: 16rpx; font-size: 27rpx; }
+.dev-login { width: 100%; margin: 20rpx 0 0; color: #5c3100; background: #f6a000; border-radius: 16rpx; font-size: 27rpx; }
 .privacy-copy { display: block; margin-top: 24rpx; color: #9aa2b2; font-size: 23rpx; text-align: center; }
 .error { margin-top: 24rpx; color: #e53e3e; font-size: 24rpx; word-break: break-all; }
-.app-shell { min-height: 100vh; padding: 46rpx 36rpx 70rpx; box-sizing: border-box; background: #f7f8fa; }
-.app-header { display: flex; align-items: center; justify-content: space-between; }
-.app-brand { display: block; color: #101827; font-size: 56rpx; font-weight: 700; letter-spacing: -2rpx; }
-.app-tagline { display: block; margin-top: 4rpx; color: #9aa2b2; font-size: 22rpx; }
-.welcome-block { margin: 82rpx 4rpx 48rpx; }
-.welcome { display: block; font-size: 32rpx; font-weight: 600; }
-.muted { display: block; margin-top: 12rpx; color: #718096; font-size: 25rpx; }
-.ghost { margin: 0; padding: 0 22rpx; color: #1aad70; background: #edf9f3; font-size: 25rpx; }
-.section-title { margin: 42rpx 4rpx 20rpx; color: #1f2937; font-size: 32rpx; font-weight: 600; }
-.empty { color: #718096; text-align: center; }
-.trip-title { display: block; font-size: 32rpx; font-weight: 600; }
-.map-entry { margin: 36rpx 0 0; color: #1aad70; background: #eaf8f1; }
-.create-entry { margin: 36rpx 0 0; color: #fff; background: #111827; }
+.app-shell { min-height: 100vh; padding: 36rpx 32rpx 170rpx; box-sizing: border-box; background: #f4f2ed; color: #141419; }
+.top-bar { display: flex; align-items: center; height: 92rpx; padding: 0 18rpx; border: 1rpx solid rgba(255,255,255,.85); border-radius: 58rpx; background: rgba(255,255,255,.74); box-shadow: 0 18rpx 40rpx rgba(70,65,55,.08); }
+.brand-tile { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; border-radius: 24rpx; background: #101013; color: #fff; font-size: 38rpx; }
+.top-spacer { flex: 1; }
+.top-icon { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; margin-right: 14rpx; border-radius: 50%; background: #fff; font-size: 36rpx; }
+.avatar { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; border: 4rpx solid #fff; border-radius: 50%; background: #4c4c54; color: #fff; font-size: 30rpx; box-shadow: 0 8rpx 20rpx rgba(0,0,0,.2); }
+.user-menu { position: absolute; top: 144rpx; right: 32rpx; z-index: 20; width: 480rpx; padding: 18rpx; border: 1rpx solid rgba(255,255,255,.9); border-radius: 28rpx; background: rgba(255,255,255,.94); box-shadow: 0 20rpx 50rpx rgba(0,0,0,.16); }
+.menu-profile { display: flex; align-items: center; gap: 16rpx; padding: 10rpx; }
+.menu-avatar { width: 76rpx; height: 76rpx; flex: none; }
+.menu-name { display: block; font-size: 29rpx; font-weight: 700; }
+.menu-email { display: block; margin-top: 6rpx; color: #888; font-size: 21rpx; }
+.menu-row { display: flex; align-items: center; gap: 18rpx; padding: 24rpx 14rpx; color: #202027; font-size: 29rpx; }
+.menu-row text:first-of-type { flex: 1; }
+.menu-value { color: #777; font-size: 22rpx; }
+.menu-divider { height: 1rpx; margin: 0 12rpx; background: #ecebea; }
+.menu-row.danger { color: #d33f58; }
+.welcome-mask { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 30rpx; background: rgba(24,24,29,.62); }
+.welcome-modal { width: 100%; padding: 34rpx; box-sizing: border-box; border-radius: 34rpx; background: rgba(255,255,255,.96); box-shadow: 0 24rpx 70rpx rgba(0,0,0,.3); }
+.welcome-brand { display: flex; align-items: center; gap: 18rpx; font-size: 34rpx; font-weight: 750; }
+.welcome-brand .brand-tile { width: 62rpx; height: 62rpx; }
+.welcome-copy { display: block; margin-top: 24rpx; color: #777; font-size: 25rpx; line-height: 1.6; }
+.welcome-info { display: flex; gap: 14rpx; margin-top: 24rpx; }
+.welcome-info text { flex: 1; padding: 20rpx; border: 2rpx solid #bce6f1; border-radius: 20rpx; color: #207e9e; font-size: 21rpx; line-height: 1.5; }
+.welcome-info text:last-child { border-color: #f1da8a; color: #a3691c; }
+.welcome-description { margin-top: 18rpx; padding: 22rpx; border: 2rpx solid #e3e5ea; border-radius: 20rpx; color: #777; font-size: 23rpx; line-height: 1.55; }
+.description-title { display: block; margin-bottom: 8rpx; color: #202127; font-size: 27rpx; font-weight: 700; }
+.welcome-dismiss { margin-top: 26rpx; color: #fff; background: #101827; border-radius: 20rpx; }
+.hero-trip { min-height: 390rpx; margin-top: 52rpx; padding: 30rpx; background: linear-gradient(160deg, rgba(255,255,255,.68), rgba(234,231,225,.84)); }
+.hero-trip-top { display: flex; align-items: center; justify-content: space-between; }
+.trip-kicker { padding: 14rpx 24rpx; border-radius: 34rpx; background: #fff; font-size: 24rpx; font-weight: 650; }
+.hero-actions { display: flex; gap: 12rpx; }
+.hero-actions text { display: flex; align-items: center; justify-content: center; width: 68rpx; height: 68rpx; border-radius: 50%; background: rgba(255,255,255,.55); color: #9ea0a3; font-size: 30rpx; }
+.hero-title { display: block; margin-top: 190rpx; color: #fff; font-size: 48rpx; font-weight: 750; text-shadow: 0 2rpx 5rpx rgba(0,0,0,.15); }
+.stat-row { display: flex; gap: 12rpx; margin-top: 26rpx; }
+.stat-pill { padding: 12rpx 16rpx; border-radius: 30rpx; background: rgba(49,48,48,.48); color: #fff; font-size: 22rpx; }
+.filter-row { display: flex; align-items: center; gap: 12rpx; margin: 30rpx 0 20rpx; }
+.segmented { display: flex; flex: 1; padding: 8rpx; border-radius: 50rpx; background: rgba(255,255,255,.5); }
+.segment { flex: 1; padding: 18rpx 8rpx; border-radius: 40rpx; color: #333; font-size: 24rpx; text-align: center; }
+.segment.active { background: #101013; color: #fff; }
+.round-icon { display: flex; align-items: center; justify-content: center; width: 70rpx; height: 70rpx; border-radius: 50%; background: rgba(255,255,255,.72); font-size: 34rpx; }
+.empty { text-align: center; color: #718096; }
+.trip-card { padding: 28rpx; background: rgba(255,255,255,.62); }
+.trip-card-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12rpx; }
+.trip-title { display: block; max-width: 52%; overflow: hidden; font-size: 31rpx; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.trip-date { padding: 10rpx 16rpx; border-radius: 30rpx; background: rgba(235,233,228,.9); color: #5c5b5a; font-size: 21rpx; white-space: nowrap; }
+.trip-card-line { display: flex; justify-content: space-between; margin-top: 28rpx; color: #777; font-size: 23rpx; }
+.trip-status { color: #777; }
+.list-card { border-radius: 20rpx; }
+.bottom-nav { position: fixed; right: 32rpx; bottom: 34rpx; left: 32rpx; z-index: 10; display: flex; align-items: center; justify-content: space-around; height: 106rpx; border: 1rpx solid rgba(255,255,255,.95); border-radius: 58rpx; background: rgba(255,255,255,.9); box-shadow: 0 12rpx 36rpx rgba(0,0,0,.12); }
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 74rpx; color: #666; font-size: 30rpx; }
+.nav-item text { margin-top: 5rpx; font-size: 18rpx; }
+.nav-item.selected { color: #111; }
+.nav-add { display: flex; align-items: center; justify-content: center; width: 92rpx; height: 92rpx; margin-top: -44rpx; border-radius: 50%; background: #101013; color: #fff; font-size: 56rpx; box-shadow: 0 12rpx 24rpx rgba(0,0,0,.22); }

@@ -1,4 +1,13 @@
 <view class="page">
+  <block wx:if="{{overview}}">
+    <view class="welcome-card"><view class="welcome-brand"><text class="welcome-mark">✦</text><text>欢迎来到 trek</text></view><text class="welcome-copy">你可以查看、编辑和创建旅行。所有更改都会在每小时自动重置。</text></view>
+    <view class="info-row"><view><text class="info-title">什么是 TREK？</text><text class="info-copy">一个支持实时协作、交互式地图和深色模式的旅行规划器。</text></view></view>
+    <text class="feature-label">模块化附加组件</text>
+    <view class="feature-grid"><view class="feature-card" bindtap="openJourney"><text>▣ Journey</text><text>记录旅行、照片和旅程故事</text></view><view class="feature-card" bindtap="openMap"><text>◎ Atlas</text><text>探索地图、搜索地点和规划路线</text></view><view class="feature-card"><text>☷ Packing</text><text>按旅行管理清单</text></view><view class="feature-card" bindtap="openCollections"><text>▤ Collections</text><text>保存和整理想去的地点</text></view><view class="feature-card"><text>▧ Documents</text><text>将文件附加到旅行</text></view><view class="feature-card"><text>⇄ Widgets</text><text>货币换算和时区工具</text></view></view>
+    <button class="settings-entry" bindtap="openSettings">设置</button>
+    <view class="bottom-nav"><view class="nav-item" bindtap="goHome">▦<text>行程</text></view><view class="nav-item" bindtap="goHome">▣<text>日历</text></view><view class="nav-add" bindtap="goHome">＋</view><view class="nav-item" bindtap="goHome">◎<text>探索</text></view><view class="nav-item selected">•••<text>更多</text></view></view>
+  </block>
+  <block wx:else>
   <view class="tabs"><button data-tab="todo" class="{{tab == 'todo' ? 'active' : ''}}" bindtap="switchTab">待办</button><button data-tab="packing" class="{{tab == 'packing' ? 'active' : ''}}" bindtap="switchTab">行李</button><button data-tab="budget" class="{{tab == 'budget' ? 'active' : ''}}" bindtap="switchTab">预算</button><button data-tab="reservations" class="{{tab == 'reservations' ? 'active' : ''}}" bindtap="switchTab">预订</button><button data-tab="weather" class="{{tab == 'weather' ? 'active' : ''}}" bindtap="switchTab">天气</button></view>
   <view wx:if="{{tab == 'budget'}}" class="total">总预算 <text>¥ {{total}}</text></view>
   <text wx:if="{{error}}" class="error">{{error}}</text>
@@ -10,4 +19,5 @@
     <text wx:if="{{tab != 'budget'}}" class="remove" data-index="{{index}}" bindtap="remove">删除</text>
   </view>
   <button wx:if="{{tab != 'weather'}}" class="add" bindtap="addItem">+ 添加{{tab == 'todo' ? '待办' : tab == 'packing' ? '行李' : tab == 'budget' ? '费用' : '预订'}}</button>
+  </block>
 </view>

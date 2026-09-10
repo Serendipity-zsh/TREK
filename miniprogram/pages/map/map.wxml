@@ -1,4 +1,6 @@
 <view class="page">
+  <view class="map-title">心愿单</view>
+  <view class="top-bar"><view class="brand-tile" bindtap="goHome">✦</view><view class="top-spacer"></view><view class="top-icon">⌕</view><view class="top-icon">◎</view></view>
   <view class="search-row">
     <input class="search-input" value="{{query}}" placeholder="搜索景点、酒店或地址" confirm-type="search" bindinput="onQueryInput" bindconfirm="search" />
     <button class="search-button" loading="{{loading}}" bindtap="search">搜索</button>
@@ -10,4 +12,6 @@
     <view class="result-copy"><text class="name">{{item.name}}</text><text class="address">{{item.address}}</text></view>
     <button class="save-button" data-index="{{index}}" catchtap="saveResult">保存</button>
   </view>
+  <view class="quick-links"><view bindtap="openCollections">♧ <text>收藏</text><text>›</text></view><view bindtap="openJourney">◎ <text>旅程</text><text>›</text></view></view>
+  <view class="bottom-nav"><view class="nav-item" bindtap="goHome">▦<text>行程</text></view><view class="nav-item">▣<text>日历</text></view><view class="nav-add">⌕</view><view class="nav-item selected">◎<text>探索</text></view><view class="nav-item" bindtap="openTools">•••<text>更多</text></view></view>
 </view>

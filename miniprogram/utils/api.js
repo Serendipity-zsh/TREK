@@ -67,5 +67,14 @@ function listReservations(tripId) { return call(`/api/trips/${tripId}/reservatio
 function createReservation(tripId, payload) { return call(`/api/trips/${tripId}/reservations`, 'POST', payload) }
 function deleteReservation(tripId, id) { return call(`/api/trips/${tripId}/reservations/${id}`, 'DELETE') }
 function getWeather(lat, lng, date) { return call(`/api/weather?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}${date ? `&date=${encodeURIComponent(date)}` : ''}&lang=zh`) }
+function listNotifications(unreadOnly) { return call(`/api/notifications/in-app?limit=50${unreadOnly ? '&unread_only=true' : ''}`) }
+function markAllNotificationsRead() { return call('/api/notifications/in-app/read-all', 'PUT') }
+function deleteAllNotifications() { return call('/api/notifications/in-app/all', 'DELETE') }
+function markNotificationRead(id) { return call(`/api/notifications/in-app/${id}/read`, 'PUT') }
+function deleteNotification(id) { return call(`/api/notifications/in-app/${id}`, 'DELETE') }
+function listJourneys() { return call('/api/journeys') }
+function createJourney(payload) { return call('/api/journeys', 'POST', payload) }
+function listCollections() { return call('/api/addons/collections') }
+function getCollection(id) { return call(`/api/addons/collections/${id}`) }
 
-module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation }
+module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, listCollections, getCollection }

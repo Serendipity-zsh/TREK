@@ -64,7 +64,7 @@ export function getHttpServer(): nodeHttp.Server {
   return boundHttpServer;
 }
 
-export async function buildApp(): Promise<INestApplication> {
+export async function buildApp(existingHttpServer?: nodeHttp.Server): Promise<INestApplication> {
   // rawBody keeps the unparsed request bytes on req.rawBody so a plugin webhook
   // route can verify a provider's HMAC signature over the exact payload (the
   // parsed JSON alone can't be re-serialised byte-for-byte).
@@ -77,7 +77,12 @@ export async function buildApp(): Promise<INestApplication> {
   // Nest's own internal http server, which this process never listens on: the
   // boot succeeds, the gateway logs as registered, every test passes, and no
   // browser can connect. Callers take the server from getHttpServer() below.
-  boundHttpServer = nodeHttp.createServer(instance);
+  boundHttpServer = existingHttpServer ?? nodeHttp.createServer(instance);
+  // The production entrypoint binds a tiny health handler before the database
+  // migrations run. Once Nest is ready, atomically replace that bootstrap
+  // handler with the real Express application on the same listening server.
+  // Keeping the socket open prevents Cloud Run/CloudBase startup probes from
+  // restarting a healthy container during a one-time SQLite upgrade.
   app.useWebSocketAdapter(new TrekWsAdapter(boundHttpServer));
   // ConfigModule.forRoot's load factories already ran inside NestFactory.create,
   // so the boot-stable snapshot is resolvable here, BEFORE app.init() — this is
@@ -160,5 +165,9 @@ export async function buildApp(): Promise<INestApplication> {
   // list somebody reviewed. Runs in every e2e harness because they share this
   // builder, so a forgotten marker fails in CI rather than at a customer.
   validateManagedRoutes(app);
+  if (existingHttpServer) {
+    existingHttpServer.removeAllListeners('request');
+    existingHttpServer.on('request', instance);
+  }
   return app;
 }

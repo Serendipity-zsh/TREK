@@ -1,8 +1,8 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { tripId: '', tab: 'todo', items: [], loading: false, error: '', total: 0, weather: null, weatherPlace: '', weatherTemperature: '' },
-  onLoad(options) { this.setData({ tripId: options.tripId || '', tab: options.tab || 'todo' }); this.load() },
+  data: { tripId: '', tab: 'todo', overview: false, items: [], loading: false, error: '', total: 0, weather: null, weatherPlace: '', weatherTemperature: '' },
+  onLoad(options) { const tripId = options.tripId || ''; this.setData({ tripId, tab: options.tab || 'todo', overview: !tripId }); if (tripId) this.load() },
   switchTab(event) { this.setData({ tab: event.currentTarget.dataset.tab }); this.load() },
   load() {
     this.setData({ loading: true, error: '' })
@@ -48,4 +48,9 @@ Page({
       request.then(() => this.load()).catch((error) => wx.showToast({ title: error.errMsg || '删除失败', icon: 'none' }))
     } })
   },
+  openSettings() { wx.navigateTo({ url: '../settings/settings' }) },
+  openMap() { wx.navigateTo({ url: '../map/map' }) },
+  openJourney() { wx.navigateTo({ url: '../journey/journey' }) },
+  openCollections() { wx.navigateTo({ url: '../collections/collections' }) },
+  goHome() { wx.navigateBack({ delta: 1 }) },
 })

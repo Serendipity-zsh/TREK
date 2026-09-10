@@ -18,6 +18,11 @@ Page({
   onLoad(options) {
     this.setData({ tripId: options.tripId || '', dayId: options.dayId || '' })
   },
+  goHome() { wx.navigateBack({ delta: 1 }) },
+  openCalendar() { wx.navigateTo({ url: '../calendar/calendar' }) },
+  openTools() { wx.navigateTo({ url: '../tools/tools' }) },
+  openCollections() { wx.navigateTo({ url: '../collections/collections' }) },
+  openJourney() { wx.navigateTo({ url: '../journey/journey' }) },
 
   onQueryInput(event) {
     this.setData({ query: event.detail.value, error: '' })

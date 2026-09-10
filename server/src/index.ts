@@ -8,7 +8,6 @@ import path from 'node:path';
 import fs from 'node:fs';
 import http from 'node:http';
 import type { INestApplication } from '@nestjs/common';
-import { buildApp, getHttpServer } from './bootstrap';
 
 // data/tmp is the driver-agnostic global scratch dir (restore-upload spool,
 // mirror stream staging) and stays boot-created here. Driver-owned roots — the
@@ -81,39 +80,52 @@ const onListen = () => {
 let server: http.Server;
 let nestApp: INestApplication;
 
+// Keep the container port reachable while import-time database setup and the
+// one-time migration chain run. Cloud probes otherwise see ECONNREFUSED and
+// restart the process before Nest has a chance to listen. Only the probe path
+// gets a 200 during this phase; every application route remains unavailable.
+const bootHealthServer = http.createServer((req, res) => {
+  if (req.method === 'GET' && new URL(req.url ?? '/', 'http://localhost').pathname === '/api/health') {
+    res.setHeader('Cache-Control', 'no-store, must-revalidate');
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ status: 'starting' }));
+    return;
+  }
+  res.statusCode = 503;
+  res.setHeader('Retry-After', '5');
+  res.end('Service is starting');
+});
+
 // Strangler toggle: prefixes served by Nest (env-overridable, instant rollback).
 async function bootstrap(): Promise<void> {
+  const { buildApp, getHttpServer } = await import('./bootstrap');
   // The whole surface runs on the single NestJS app now (Express decommissioned):
   // global pipeline + /uploads + every /api domain + the platform/transport routes
   // (/mcp, /.well-known, OAuth SDK, SPA catch-all). buildApp() owns the composition
   // order; it is shared with the integration-test harness so they can't drift.
-  nestApp = await buildApp();
+  nestApp = await buildApp(server);
   // The server buildApp created and bound /ws to. Creating a second one here
   // would serve the REST API fine and leave the gateway attached to a socket
   // nobody listens on.
   server = getHttpServer();
 
-  // A bind failure has to be fatal and loud, and it needs saying explicitly.
-  // listen() reports failure by event, not by rejecting, so the catch around
-  // bootstrap() never sees it. And since buildApp attaches the ws server to this
-  // http server, ws has already registered its own `error` listener on it, which
-  // is enough for Node to stop throwing on an unhandled one. Without this the
-  // process would survive EADDRINUSE, never run onListen, and serve nothing
-  // while looking healthy.
-  server.on('error', (err: NodeJS.ErrnoException) => {
-    const where = HOST ? `${HOST}:${PORT}` : `:${PORT}`;
-    console.error(`Fatal: cannot listen on ${where} — ${err.code ?? ''} ${err.message}`);
-    process.exit(1);
-  });
-
-  if (HOST) server.listen(PORT, HOST, onListen);
-  else server.listen(PORT, onListen);
+  onListen();
 }
 
-bootstrap().catch((err) => {
-  console.error('Fatal: failed to bootstrap server', err);
+server = bootHealthServer;
+server.on('error', (err: NodeJS.ErrnoException) => {
+  const where = HOST ? `${HOST}:${PORT}` : `:${PORT}`;
+  console.error(`Fatal: cannot listen on ${where} — ${err.code ?? ''} ${err.message}`);
   process.exit(1);
 });
+if (HOST) server.listen(PORT, HOST, () => void bootstrap().catch((err) => {
+  console.error('Fatal: failed to bootstrap server', err);
+  process.exit(1);
+}));
+else server.listen(PORT, () => void bootstrap().catch((err) => {
+  console.error('Fatal: failed to bootstrap server', err);
+  process.exit(1);
+}));
 
 // Graceful shutdown
 //
