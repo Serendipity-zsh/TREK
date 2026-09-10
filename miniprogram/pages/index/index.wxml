@@ -1,30 +1,46 @@
 <view class="page">
-  <view class="hero">
-    <text class="brand">TREK</text>
-    <text class="subtitle">旅行规划助手</text>
-  </view>
+  <view wx:if="{{!loggedIn}}" class="login-shell">
+    <view class="login-hero">
+      <view class="dot-field"></view>
+      <view class="hero-content">
+        <view class="logo-mark"><text>+</text><text>+</text><text>+</text></view>
+        <text class="brand">trek</text>
+        <text class="hero-title">你的旅行。你的计划。</text>
+        <text class="hero-copy">通过互动地图、预算管理和实时同步，协同规划旅行。</text>
+      </view>
+    </view>
 
-  <view wx:if="{{!loggedIn}}" class="card login-card">
-    <text class="card-title">开始规划你的旅程</text>
-    <text class="card-copy">使用微信账号登录，行程数据会保存到 TREK。</text>
-    <button class="primary" loading="{{loading}}" bindtap="handleLogin">微信一键登录</button>
-    <text wx:if="{{error}}" class="error">{{error}}</text>
+    <view class="login-panel">
+      <view class="login-card">
+        <text class="card-title">登录</text>
+        <text class="card-copy">欢迎回来</text>
+        <button class="primary" loading="{{loading}}" bindtap="handleLogin">微信登录</button>
+        <text class="privacy-copy">首次登录会自动创建 TREK 账号</text>
+        <text wx:if="{{error}}" class="error">{{error}}</text>
+      </view>
+    </view>
   </view>
 
   <block wx:else>
-    <view class="card user-card">
-      <view>
-        <text class="welcome">你好，{{user.username}}</text>
-        <text class="muted">你的行程</text>
+    <view class="app-shell">
+      <view class="app-header">
+        <view>
+          <text class="app-brand">trek</text>
+          <text class="app-tagline">你的旅行。你的计划。</text>
+        </view>
+        <button class="ghost" bindtap="handleLogout">退出</button>
       </view>
-      <button class="ghost" bindtap="handleLogout">退出</button>
+      <view class="welcome-block">
+        <text class="welcome">你好，{{user.username}}</text>
+        <text class="muted">开始规划下一段旅程</text>
+      </view>
+      <view class="section-title">我的行程</view>
+      <view wx:if="{{!trips.length}}" class="card empty">还没有行程，马上创建一个吧。</view>
+      <view wx:for="{{trips}}" wx:key="id" class="card trip-card">
+        <text class="trip-title">{{item.title}}</text>
+        <text class="muted">{{item.start_date || '未设置日期'}}{{item.end_date ? ' - ' + item.end_date : ''}}</text>
+      </view>
+      <button class="map-entry" bindtap="openMap">搜索地点和地图</button>
     </view>
-    <view class="section-title">我的行程</view>
-    <view wx:if="{{!trips.length}}" class="card empty">还没有行程，马上创建一个吧。</view>
-    <view wx:for="{{trips}}" wx:key="id" class="card trip-card">
-      <text class="trip-title">{{item.title}}</text>
-      <text class="muted">{{item.start_date || '未设置日期'}}{{item.end_date ? ' - ' + item.end_date : ''}}</text>
-    </view>
-    <button class="map-entry" bindtap="openMap">搜索地点和地图</button>
   </block>
 </view>
