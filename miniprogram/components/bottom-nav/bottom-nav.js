@@ -2,6 +2,7 @@ Component({
   data: { moreOpen: false },
   properties: {
     active: { type: String, value: 'home' },
+    centerMode: { type: String, value: 'create' },
   },
 
   methods: {
