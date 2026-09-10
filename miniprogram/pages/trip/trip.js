@@ -211,7 +211,7 @@ Page({
     if (!place || !assignment) return
     wx.showActionSheet({ itemList: ['编辑地点', '打开地图', '从当天移除'], success: (result) => {
       if (result.tapIndex === 0) return this.editPlace(place)
-      if (result.tapIndex === 1) return wx.navigateTo({ url: `/pages/map/map?lat=${place.lat}&lng=${place.lng}` })
+      if (result.tapIndex === 1) return wx.navigateTo({ url: `/pages/map/map?tripId=${encodeURIComponent(this.data.id)}&dayId=${encodeURIComponent(dayId)}&lat=${encodeURIComponent(place.lat)}&lng=${encodeURIComponent(place.lng)}` })
       this.removeAssignment({ currentTarget: { dataset: { dayId, id: assignment.id } } })
     } })
   },
