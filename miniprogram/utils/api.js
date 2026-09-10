@@ -86,6 +86,8 @@ function deleteCollectionPlace(id) { return call(`/api/addons/collections/places
 function setCollectionPlaceStatus(id, status) { return call(`/api/addons/collections/places/${id}/status`, 'POST', { status }) }
 function getAtlasStats() { return call('/api/addons/atlas/stats') }
 function getAtlasBucketList() { return call('/api/addons/atlas/bucket-list') }
+function createAtlasBucketItem(payload) { return call('/api/addons/atlas/bucket-list', 'POST', payload) }
+function deleteAtlasBucketItem(id) { return call(`/api/addons/atlas/bucket-list/${id}`, 'DELETE') }
 function getVacayPlan() { return call('/api/addons/vacay/plan') }
 function getVacayStats(year) { return call(`/api/addons/vacay/stats/${year}`) }
 function getVacayEntries(year) { return call(`/api/addons/vacay/entries/${year}`) }
@@ -93,4 +95,4 @@ function toggleVacayEntry(payload) { return call('/api/addons/vacay/entries/togg
 function toggleCompanyHoliday(payload) { return call('/api/addons/vacay/entries/company-holiday', 'POST', payload) }
 function updateVacayStats(year, payload) { return call(`/api/addons/vacay/stats/${year}`, 'PUT', payload) }
 
-module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, listJourneyEntries, createJourneyEntry, deleteJourneyEntry, listCollections, createCollection, getCollection, deleteCollection, deleteCollectionPlace, setCollectionPlaceStatus, getAtlasStats, getAtlasBucketList, getVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, toggleCompanyHoliday, updateVacayStats }
+module.exports = { call, login, demoLogin, amapSearch, amapReverse, amapRoute, getWeather, getTrip, createTrip, updateTrip, deleteTrip, listDays, createDay, deleteDay, listPlaces, createPlace, createAssignment, listTodo, createTodo, updateTodo, deleteTodo, listPacking, createPacking, updatePacking, deletePacking, listBudget, createBudget, listReservations, createReservation, deleteReservation, listNotifications, markAllNotificationsRead, deleteAllNotifications, markNotificationRead, deleteNotification, listJourneys, createJourney, getJourney, listJourneyEntries, createJourneyEntry, deleteJourneyEntry, listCollections, createCollection, getCollection, deleteCollection, deleteCollectionPlace, setCollectionPlaceStatus, getAtlasStats, getAtlasBucketList, createAtlasBucketItem, deleteAtlasBucketItem, getVacayPlan, getVacayStats, getVacayEntries, toggleVacayEntry, toggleCompanyHoliday, updateVacayStats }

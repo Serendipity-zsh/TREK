@@ -21,4 +21,7 @@ Page({
   openJourney(e) { wx.navigateTo({ url: `/pages/journey-detail/journey-detail?id=${e.currentTarget.dataset.id}` }) },
   openTools() { wx.navigateTo({ url: '/pages/tools/tools' }) },
   openMap() { wx.switchTab ? wx.navigateTo({ url: '/pages/map/map' }) : null },
+  openHome() { wx.navigateBack({ delta: 1 }) },
+  openCalendar() { wx.navigateTo({ url: '/pages/vacay/vacay' }) },
+  openAtlas() { wx.navigateTo({ url: '/pages/atlas/atlas' }) },
 })

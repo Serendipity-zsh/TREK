@@ -50,5 +50,8 @@ Page({
     } })
   },
   openMap(e) { const p = this.data.visiblePlaces[e?.currentTarget?.dataset?.index] || this.data.visiblePlaces[0]; wx.navigateTo({ url: p?.lat != null ? `/pages/map/map?lat=${p.lat}&lng=${p.lng}` : '/pages/map/map' }) },
+  openCalendar() { wx.navigateTo({ url: '/pages/vacay/vacay' }) },
+  openAtlas() { wx.navigateTo({ url: '/pages/atlas/atlas' }) },
+  openHome() { wx.navigateBack({ delta: 1 }) },
   openMore() { wx.navigateTo({ url: '/pages/tools/tools' }) },
 })
